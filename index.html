@@ -100,6 +100,16 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 .opt i{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid #ffffff44}
 .opt.on{border-color:#a855f7;background:linear-gradient(90deg,#38bdf81f,#a855f71f,#ff3d9a1f);box-shadow:0 0 14px #a855f733}
 .opt.on i{border-color:transparent;background:radial-gradient(#fff 0 32%,transparent 36%),var(--g)}
+:root{--mv:linear-gradient(90deg,#38bdf8,#a855f7,#ff3d9a,#a855f7,#38bdf8)}
+.btn:not(.o),nav button.on{background-color:transparent!important;background-image:var(--mv)!important;background-size:200% 100%!important}
+.btn.o,.ib,.mc,.chip,nav button:not(.on){border:1.5px solid transparent!important;background-color:transparent!important;background-image:linear-gradient(#120a24,#120a24),var(--mv)!important;background-clip:padding-box,border-box!important;background-origin:border-box!important;background-size:auto,200% 100%!important}
+@keyframes mvf{to{background-position:100% 0}}
+@keyframes mvo{to{background-position:0 0,100% 0}}
+@media(prefers-reduced-motion:no-preference){.btn:not(.o),nav button.on{animation:mvf 3.5s ease-in-out infinite alternate}.btn.o,.ib,.mc,.chip,nav button:not(.on){animation:mvo 3.5s ease-in-out infinite alternate}}
+.ci{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.rn{width:100%;background:transparent;border:0;border-bottom:1px solid var(--v);outline:none;font:inherit;color:inherit;padding:2px 0}
+#cb{position:fixed;inset:0;z-index:40}
+#cm{position:fixed;bottom:auto;min-width:160px;z-index:41}
 </style></head><body>
 
 <div id="auth" class="scr">
@@ -146,10 +156,12 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 <label>Groq API key (<a href="https://console.groq.com/keys" target="_blank" rel="noopener">get one</a>)</label><input id="kg" type="password" autocomplete="off" placeholder="gsk_…">
 <label>Gemini API key (<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">get one</a>)</label><input id="kj" type="password" autocomplete="off" placeholder="AIza…">
 <label>Google Client ID (enables Google sign-in)</label><input id="ci" placeholder="123…apps.googleusercontent.com">
-<p class="mu">Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
+<p class="mu">Version 4. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
 <button class="btn" id="sv">Save</button><button class="btn o" id="sx">Close</button></div></div>
 <div id="sb" class="hide"></div>
 <div id="ms" class="hide"><b class="gt">Choose model</b><div id="mr"></div><button class="btn" id="sd">Done</button></div>
+<div id="cb" class="hide"></div>
+<div id="cm" class="pop hide"><button type="button" data-a="pin">📌 Pin</button><button type="button" data-a="ren">✏️ Rename</button><button type="button" data-a="del">🗑️ Delete</button></div>
 <div id="toast"></div>
 
 <script>
@@ -187,7 +199,10 @@ async function gm(m,s,ax=[]){
  const c=j.candidates[0],g=[...new Map((c.groundingMetadata?.groundingChunks||[]).filter(x=>x.web).map(x=>[x.web.title||x.web.uri,x.web])).values()].slice(0,4);
  return(c.content?.parts||[]).map(p=>p.text||'').join('')+(g.length?'\n\n🔎 Sources: '+g.map(x=>'['+(x.title||'link')+']('+x.uri+')').join(' · '):'')}
 async function ask(m,s,ax=[]){
- s+='\n\nCurrent date and time for the user: '+new Date().toLocaleString('en-US',{dateStyle:'full',timeStyle:'long'})+' ('+Intl.DateTimeFormat().resolvedOptions().timeZone+'). Use it whenever the time or date matters and never say you cannot know it.'+(K.ws!==false?' You can search the web, so use it for news, scores, prices, weather and anything recent.':'');
+ const d=new Date(),z=Intl.DateTimeFormat().resolvedOptions().timeZone,q=-d.getTimezoneOffset(),of=(q<0?'-':'+')+String(Math.floor(Math.abs(q)/60)).padStart(2,'0')+':'+String(Math.abs(q)%60).padStart(2,'0');
+ const ctx='REAL CLOCK, read from the user\'s device just now: '+d.toLocaleString('en-US',{dateStyle:'full',timeStyle:'long'})+', time zone '+z+' (UTC'+of+'). UTC now: '+d.toISOString().slice(0,19).replace('T',' ')+'. This is the true current time. When asked for the time or date, answer directly from it, converting to other places or time zones if asked. Never say you lack a clock, never tell the user to check another device, and do not web-search for the time. Ignore any earlier messages in this chat that claimed otherwise.';
+ s+='\n\n'+ctx+(K.ws!==false?' You can search the web for news, scores, prices, weather and other recent facts.':'');
+ m=m.map((x,i)=>x.r==='assistant'&&/clock|real-?time/i.test(x.t)&&/(don.?t|can.?t|cannot|not) (have|know|access|give|tell)/i.test(x.t)?{...x,t:'(earlier reply omitted)'}:i===m.length-1&&x.r==='user'?{...x,t:'['+ctx+']\n\n'+x.t}:x);
  let o=K.prov==='gemini'?['gemini','groq']:K.prov==='groq'?['groq','gemini']:K.groq?['groq','gemini']:['gemini','groq'];
  if(ax.length&&K.prov!=='groq'&&K.prov!=='gemini')o=['gemini','groq'];
  let er;for(const p of o){if(!K[p])continue;try{return await(p==='groq'?gq:gm)(m,s,ax)}catch(e){er=e}}
@@ -217,7 +232,9 @@ function render(){
  const l=box.querySelector('.m:last-child');
  if(toTop&&l&&l.classList.contains('assistant'))box.scrollTop+=l.getBoundingClientRect().top-box.getBoundingClientRect().top-8;
  toTop=false}
-function list(){$('#list').innerHTML=chats.filter(c=>c.tab===tab&&c.m.length).map(c=>'<div class="ci'+(c.id===cur?' on':'')+'" data-id="'+c.id+'"><span>'+esc(c.title)+'</span><b data-del="'+c.id+'">✕</b></div>').join('')||'<p class="mu">Your chats will be saved here.</p>'}
+let rid=null;
+function list(){$('#list').innerHTML=chats.filter(c=>c.tab===tab&&c.m.length).sort((a,b)=>!!b.pin-!!a.pin).map(c=>'<div class="ci'+(c.id===cur?' on':'')+'" data-id="'+c.id+'">'+(rid===c.id?'<input class="rn" maxlength="60">':'<span>'+(c.pin?'📌 ':'')+esc(c.title)+'</span>')+'</div>').join('')||'<p class="mu">Your chats will be saved here. Hold one for Pin, Rename and Delete.</p>';
+ const ri=$('#list .rn');if(ri){ri.value=chats.find(x=>x.id===rid).title;ri.focus();ri.select()}}
 
 async function send(txt){
  txt=(txt||'').trim();if((!txt&&!A.length)||busy||!U)return;
@@ -250,10 +267,6 @@ $$('nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;$$('nav button').forE
 const dr=o=>{$('#dr').classList.toggle('open',o);$('#bk').classList.toggle('hide',!o)};
 $('#mn').onclick=()=>dr(1);$('#bk').onclick=()=>dr(0);
 $('#nc').onclick=()=>{cur=null;render();list();dr(0)};
-$('#list').onclick=e=>{const d=e.target.closest('[data-del]'),i=e.target.closest('.ci');
- if(d){chats=chats.filter(c=>c.id!==d.dataset.del);if(cur===d.dataset.del)cur=null;save();render();list()}
- else if(i){cur=i.dataset.id;render();list();dr(0)}};
-
 function login(u){U=u;L.setItem('groq.user',JSON.stringify(u));chats=J(key(),[]);cur=null;
  $('#auth').classList.add('hide');$('#app').classList.remove('hide');
  $('#un').textContent=u.name;
@@ -333,6 +346,26 @@ async function eml(make){
  eh('');$('#ep').value='';$('#em').classList.add('hide');login({id:'e:'+e,name:e.split('@')[0],email:e})}
 $('#ge').onclick=()=>$('#em').classList.remove('hide');$('#eb').onclick=()=>$('#em').classList.add('hide');
 $('#ef').onsubmit=e=>{e.preventDefault();eml(0)};$('#ec').onclick=()=>eml(1);
+
+// hold a chat: Pin / Rename / Delete
+let lp,sx,sy,lf=false,mid=null;
+const cx=()=>{$('#cm').classList.add('hide');$('#cb').classList.add('hide')};
+function cm(id,x,y){mid=id;const c=chats.find(z=>z.id===id),m=$('#cm');$('#cm [data-a=pin]').textContent=c.pin?'📍 Unpin':'📌 Pin';m.classList.remove('hide');$('#cb').classList.remove('hide');
+ m.style.left=Math.max(8,Math.min(x,innerWidth-m.offsetWidth-8))+'px';m.style.top=Math.max(8,Math.min(y,innerHeight-m.offsetHeight-8))+'px'}
+const L2=$('#list');
+L2.addEventListener('pointerdown',e=>{const i=e.target.closest('.ci');if(!i||e.target.classList.contains('rn'))return;lf=false;sx=e.clientX;sy=e.clientY;clearTimeout(lp);lp=setTimeout(()=>{lf=true;navigator.vibrate&&navigator.vibrate(12);cm(i.dataset.id,sx,sy)},450)});
+L2.addEventListener('pointermove',e=>{if(Math.hypot(e.clientX-sx,e.clientY-sy)>10)clearTimeout(lp)});
+['pointerup','pointercancel','pointerleave'].forEach(t=>L2.addEventListener(t,()=>clearTimeout(lp)));
+L2.oncontextmenu=e=>{if(e.target.closest('.ci'))e.preventDefault()};
+L2.onclick=e=>{if(lf){lf=false;return}if(e.target.classList.contains('rn'))return;const i=e.target.closest('.ci');if(i){cur=i.dataset.id;render();list();dr(0)}};
+const rn=ok=>{if(!rid)return;const c=chats.find(x=>x.id===rid),v=($('#list .rn')?.value||'').trim();if(ok&&c&&v)c.title=v.slice(0,60);rid=null;save();list()};
+L2.addEventListener('keydown',e=>{if(e.target.classList.contains('rn')){if(e.key==='Enter'){e.preventDefault();rn(1)}if(e.key==='Escape')rn(0)}});
+L2.addEventListener('focusout',e=>{if(e.target.classList.contains('rn'))rn(1)});
+$('#cb').onclick=cx;
+$('#cm').onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;const id=mid,c=chats.find(z=>z.id===id);cx();if(!c)return;
+ if(b.dataset.a==='pin'){c.pin=!c.pin;save();list()}
+ else if(b.dataset.a==='ren'){rid=id;list()}
+ else{chats=chats.filter(z=>z.id!==id);if(cur===id)cur=null;save();render();list()}};
 
 if(U)login(U);else gInit();
 </script></body></html>
