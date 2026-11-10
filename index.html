@@ -175,7 +175,7 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 <label>Groq API key (<a href="https://console.groq.com/keys" target="_blank" rel="noopener">get one</a>)</label><input id="kg" type="password" autocomplete="off" placeholder="gsk_…">
 <label>Groq API key 2 (<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">get one</a>)</label><input id="kj" type="password" autocomplete="off" placeholder="AIza…">
 <label>Google Client ID (enables Google sign-in)</label><input id="ci" placeholder="123…apps.googleusercontent.com">
-<p class="mu">Version 6. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
+<p class="mu">Version 7. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
 <button class="btn" id="sv">Save</button><button class="btn o" id="sx">Close</button></div></div>
 <div id="sb" class="hide"></div>
 <div id="ms" class="hide"><b class="gt">Choose model</b><div id="mr"></div><button class="btn" id="sd">Done</button></div>
@@ -348,7 +348,7 @@ async function micOn(){
  try{const AC=window.AudioContext||window.webkitAudioContext;if(!ac||ac.state==='closed')ac=new AC();Promise.resolve(ac.resume()).catch(()=>{});an=ac.createAnalyser();an.fftSize=1024;ac.createMediaStreamSource(mic).connect(an)}catch{an=null}
  return true}
 function micOff(){try{mic&&mic.getTracks().forEach(t=>t.stop())}catch{}try{ac&&ac.close()}catch{}mic=ac=an=null;const o=$('#vc .orb');if(o)o.style.boxShadow=''}
-function say(t){return new Promise(ok=>{
+function sayDev(t){return new Promise(ok=>{
  const S=window.speechSynthesis;let d=0,wd,ws;const fin=()=>{if(d)return;d=1;clearTimeout(wd);clearTimeout(ws);ok()};
  if(!S||!t)return fin();
  const ps=(t.match(/[^.!?]+[.!?]*\s*/g)||[t]).map(x=>x.trim()).filter(Boolean),v=vcVoice();
@@ -357,6 +357,66 @@ function say(t){return new Promise(ok=>{
  setTimeout(()=>{if(d||!vcOn)return fin();let go=0;
   ps.forEach((x,k)=>{const u=new SpeechSynthesisUtterance(x);if(v){u.voice=v;u.lang=v.lang}u.pitch=vo.p;u.rate=vo.r;if(k===0)u.onstart=()=>{go=1;clearTimeout(ws)};if(k===ps.length-1)u.onend=u.onerror=fin;S.speak(u)});
   ws=setTimeout(()=>{if(!go){vcDbg.voice='silent (showing text)';vcInfo();try{S.cancel()}catch{}fin()}},4500)},80)})}
+// real AI voices: Gemini speech first, Groq speech as backup, phone voice last
+const tVO={Jett:['Puck','troy'],Rex:['Fenrir','austin'],Cover:['Charon','daniel'],Atlas:['Orus','austin'],Charen:['Algenib','daniel']},tGM=['gemini-2.5-flash-preview-tts','gemini-2.5-flash-tts','gemini-2.5-pro-preview-tts'],tBad={},tWarn={};
+let tAU=null,tStop=null,tOK=null,sayTok=0;
+function tWav(u,r){const n=u.length,o=new Uint8Array(44+n),d=new DataView(o.buffer),w=(p,s)=>{for(let i=0;i<s.length;i++)o[p+i]=s.charCodeAt(i)};
+ w(0,'RIFF');d.setUint32(4,36+n,true);w(8,'WAVE');w(12,'fmt ');d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,1,true);d.setUint32(24,r,true);d.setUint32(28,r*2,true);d.setUint16(32,2,true);d.setUint16(34,16,true);w(36,'data');d.setUint32(40,n,true);o.set(u,44);
+ return new Blob([o],{type:'audio/wav'})}
+function tUnlock(){try{const a=tAU||(tAU=new Audio());a.src=URL.createObjectURL(tWav(new Uint8Array(2400),24000));const p=a.play();p&&p.catch&&p.catch(()=>{})}catch{}}
+const stopSay=()=>{sayTok++;try{speechSynthesis.cancel()}catch{}tStop&&tStop()};
+async function tG(t){let er;
+ for(const m of tOK?[tOK]:tGM){
+  for(let k=0;k<2;k++){
+   try{
+    const r=await fetch(G+m+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},body:JSON.stringify({contents:[{parts:[{text:t}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:tVO[vo.n][0]}}}}})});
+    const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);
+    const p=(j.candidates?.[0]?.content?.parts||[]).find(x=>x.inlineData);if(!p)throw new Error('Gemini sent no audio');
+    const s=atob(p.inlineData.data),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);
+    tOK=m;return tWav(u,+((/rate=(\d+)/.exec(p.inlineData.mimeType||''))||[0,24000])[1])}
+   catch(e){er=e;if(!/internal|try again|overload|unavailable|\b5\d\d\b/i.test(String(e.message)))break}}
+  if(/api key|quota|exceed|billing|RESOURCE_EXHAUSTED|rate limit/i.test(String(er.message)))break}
+ throw er}
+async function tQ(t){
+ const r=await fetch('https://api.groq.com/openai/v1/audio/speech',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+K.groq},body:JSON.stringify({model:'canopylabs/orpheus-v1-english',voice:tVO[vo.n][1],input:t,response_format:'wav'})});
+ if(!r.ok){let m=r.status;try{m=(await r.json()).error?.message||m}catch{}throw new Error(m)}
+ return new Blob([await r.arrayBuffer()],{type:'audio/wav'})}
+const tEng=()=>[...(K.gemini?[['Gemini',tG,240]]:[]),...(K.groq?[['Groq',tQ,190]]:[])];
+function tSplit(t,mx){const o=[];let c='';
+ for(const s of t.match(/[^.!?]+[.!?]*\s*/g)||[t]){let x=s.trim();if(!x)continue;
+  if(c&&(c+' '+x).length>mx){o.push(c);c=''}
+  while(x.length>mx){let k=x.lastIndexOf(' ',mx);if(k<mx/2)k=mx;o.push(x.slice(0,k).trim());x=x.slice(k).trim()}
+  if(x)c=c?c+' '+x:x}
+ if(c)o.push(c);return o.length?o:[t]}
+function tPlay(b){return new Promise(ok=>{
+ const a=tAU||(tAU=new Audio()),u=URL.createObjectURL(b);let d=0,wd;
+ const fin=v=>{if(d)return;d=1;clearTimeout(wd);a.onended=a.onerror=null;tStop=null;try{a.pause()}catch{}try{URL.revokeObjectURL(u)}catch{}ok(v)};
+ tStop=()=>fin(true);a.onended=()=>fin(true);a.onerror=()=>fin(false);wd=setTimeout(()=>fin(true),90000);
+ a.muted=false;a.volume=1;a.src=u;const p=a.play();if(p&&p.catch)p.catch(()=>fin(false))})}
+async function say(t){
+ const tk=++sayTok,live=()=>tk===sayTok&&vcOn;if(!t)return;
+ let todo=t;
+ for(const[n,f,mx]of tEng()){
+  if((tBad[n]||0)>Date.now())continue;
+  const cs=tSplit(todo,mx);let i=0,nx=f(cs[0]);nx.catch(()=>{});
+  try{
+   for(;i<cs.length;i++){
+    const b=await nx;if(!live())return;
+    nx=i+1<cs.length?f(cs[i+1]):null;if(nx)nx.catch(()=>{});
+    vcDbg.voice=n+' voice '+vo.n;vcInfo();
+    if(!await tPlay(b)){const er=new Error('the phone blocked audio playback');er.blk=1;throw er}
+    if(!live())return}
+   return}
+  catch(e){
+   const m=String(e.message||e).slice(0,100);
+   if(!e.blk)tBad[n]=Date.now()+60000;
+   vcDbg.voice=n+' failed: '+m.slice(0,70);vcInfo();
+   if(!tWarn[n]){tWarn[n]=1;toast(n+' voice failed: '+m)}
+   todo=cs.slice(i).join(' ');
+   if(e.blk)break}}
+ if(!live())return;
+ vcDbg.voice=(vcDbg.voice?vcDbg.voice+' → ':'')+'phone voice';vcInfo();
+ await sayDev(todo)}
 function listen(){return new Promise(ok=>{
  if(!vcOn||!mic)return ok('');
  if(!mic.getAudioTracks().some(t=>t.readyState==='live')){toast('The microphone was interrupted, so the call ended');vcEnd();return ok('')}
@@ -397,7 +457,7 @@ async function vcStart(){
  if(!K.groq&&!K.gemini)return toast('Add a Groq key in the setup first.');
  if(!navigator.mediaDevices||!window.MediaRecorder){micErr=window.isSecureContext===false?'insecure':'unsupported';return toast(micMsg())}
  vcBusy=true;const tk=++vcTok;
- try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch{}
+ tUnlock();try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch{}
  try{const AC=window.AudioContext||window.webkitAudioContext;if(AC&&(!ac||ac.state==='closed'))ac=new AC();if(ac)Promise.resolve(ac.resume()).catch(()=>{})}catch{}
  vcUi();vcCap('');vcDbg={mic:'asking…'};vcInfo();vcPick();vcSt('Connecting…');$('#vc').classList.remove('hide');
  const ok=await micOn();vcBusy=false;
@@ -405,9 +465,9 @@ async function vcStart(){
  if(!ok){vcEnd();return toast(micMsg())}
  vcDbg={mic:'ok',audio:ac?ac.state:'none',voices:window.speechSynthesis?speechSynthesis.getVoices().length:'none'};vcInfo();
  vcOn=true;vcHi=0;vcRun()}
-function vcEnd(){vcTok++;vcOn=false;tapGo=null;try{rec&&rec.abort()}catch{}micOff();try{speechSynthesis.cancel()}catch{}$('#vc').classList.add('hide')}
-$('#cl').onclick=vcStart;$('#ve').onclick=vcEnd;$('#vc .orb').onclick=()=>{tapGo&&tapGo()};
-$('#vl').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;vo=VO.find(v=>v.n===b.dataset.v);K.vo=vo.n;L.setItem('groq.keys',JSON.stringify(K));vcPick();vcHi=1;try{speechSynthesis.cancel()}catch{}try{rec&&rec.abort()}catch{}};
+function vcEnd(){vcTok++;vcOn=false;tapGo=null;try{rec&&rec.abort()}catch{}micOff();stopSay();$('#vc').classList.add('hide')}
+$('#cl').onclick=vcStart;$('#ve').onclick=vcEnd;$('#vc .orb').onclick=()=>{tapGo&&tapGo();stopSay()};
+$('#vl').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;vo=VO.find(v=>v.n===b.dataset.v);K.vo=vo.n;L.setItem('groq.keys',JSON.stringify(K));vcPick();vcHi=1;stopSay();try{rec&&rec.abort()}catch{}};
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&vcOn)vcEnd()});
 // + menu: camera, photos, files
 const rd=(f,t)=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;t?r.readAsText(f):r.readAsDataURL(f)});
