@@ -320,23 +320,9 @@ $('#sv').onclick=()=>{for(const i in F)K[F[i]]=$('#'+i).value.trim();L.setItem('
 // voice calls: 5 male voices
 const VO=[{n:'Jett',p:.9,r:1.12},{n:'Rex',p:.7,r:1},{n:'Cover',p:.8,r:.94},{n:'Atlas',p:.5,r:.9},{n:'Charen',p:.95,r:1.02}];
 const MALE=/\b(male|david|mark|james|george|daniel|alex|fred|ralph|tom|aaron|arthur|gordon|guy|ryan|eric|rishi|oliver|thomas|jorge|diego|evan|nathan|bruce|albert|reed|liam|matthew|paul|richard)\b/i;
-const UA=navigator.userAgent||'',WV=/; wv\)|\bwv\b/.test(UA)||(/iP(hone|ad|od)/.test(UA)&&!/Safari/.test(UA))||!!window.flutter_inappwebview||!!window.ReactNativeWebView;
-const SR=WV?null:(window.SpeechRecognition||window.webkitSpeechRecognition);
-let vo=VO.find(v=>v.n===K.vo)||VO[0],vcOn=false,vcHi=0,rec=null;
-window.speechSynthesis&&speechSynthesis.getVoices();
-const vcSt=t=>$('#vs').textContent=t;
 const vcClean=t=>t.replace(/^(ℹ️|⚠️)[^\n]*\n*/,'').replace(/```[\s\S]*?```/g,' I put the code in the chat. ').replace(/🔎 Sources:[\s\S]*$/,'').replace(/\[([^\]]+)\]\([^)]*\)/g,'$1').replace(/https?:\/\/\S+/g,'').replace(/\p{Extended_Pictographic}/gu,'').replace(/[*_`#>~]/g,'').replace(/\s+/g,' ').trim().slice(0,700);
 const vcPick=()=>{$('#vn').textContent=vo.n;$('#vl').innerHTML=VO.map(v=>'<button type="button" class="chip'+(v===vo?' on':'')+'" data-v="'+v.n+'">'+v.n+'</button>').join('')};
 function vcVoice(){const all=speechSynthesis.getVoices(),lg=(navigator.language||'en').slice(0,2).toLowerCase(),L2=all.filter(v=>v.lang.toLowerCase().startsWith(lg)),m=L2.filter(v=>MALE.test(v.name)),pool=m.length?m:L2;return pool.length?pool[VO.indexOf(vo)%pool.length]:null}
-function say(t){return new Promise(ok=>{const ps=(t.match(/[^.!?]+[.!?]*\s*/g)||[t]).map(x=>x.trim()).filter(Boolean),v=vcVoice();if(!ps.length||!window.speechSynthesis)return ok();let d=0,wd;const fin=()=>{if(d)return;d=1;clearTimeout(wd);ok()};wd=setTimeout(fin,Math.min(60000,4000+t.length*120));speechSynthesis.cancel();setTimeout(()=>{if(d)return;if(!vcOn)return fin();ps.forEach((x,k)=>{const u=new SpeechSynthesisUtterance(x);if(v){u.voice=v;u.lang=v.lang}u.pitch=vo.p;u.rate=vo.r;if(k===ps.length-1)u.onend=u.onerror=fin;speechSynthesis.speak(u)})},60)})}
-function listenSR(){return new Promise(ok=>{if(!vcOn||!SR)return ok('');const r=rec=new SR();r.lang=navigator.language||'en-US';r.interimResults=false;let t='';r.onresult=e=>{t=[...e.results].map(x=>x[0].transcript).join(' ')};r.onerror=e=>{if(/not-allowed|service-not-allowed/.test(e.error)){vcOn=false;toast('Allow the microphone to use voice calls')}};r.onend=()=>ok(t.trim());try{r.start()}catch{ok('')}})}
-const REC=!!(window.MediaRecorder&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
-let mic=null,ac=null,an=null,vcTok=0,vcBusy=false;
-const gum=(md,c)=>new Promise((ok,no)=>{let d=0;const t=setTimeout(()=>{d=1;no({name:'Timeout'})},20000);md.getUserMedia(c).then(m=>{clearTimeout(t);if(d)m.getTracks().forEach(x=>x.stop());else ok(m)},e=>{clearTimeout(t);d||no(e)})});
-let micErr='';
-const micMsg=()=>micErr==='insecure'?'Voice calls need the site to load over https://':micErr==='Timeout'?'The microphone request got no answer. Turn on Microphone Access in the app settings, rebuild the app, and allow it in your phone’s settings':/NotAllowed|Security/.test(micErr)?'Microphone is blocked. Turn on Microphone Access in the app settings and allow it in your phone’s settings':micErr==='NotFoundError'?'No microphone found on this device':'Microphone isn’t available here. In the app, turn on Microphone Access in the app settings';
-async function micOn(){if(mic)return true;micErr='';const md=navigator.mediaDevices;if(!md||!md.getUserMedia){micErr=window.isSecureContext===false?'insecure':'unsupported';return false}try{try{mic=await gum(md,{audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}})}catch(e){if(e&&/NotAllowed|Security|NotFound|Timeout/.test(e.name))throw e;mic=await gum(md,{audio:true})}try{if(!ac){const AC=window.AudioContext||window.webkitAudioContext;ac=new AC()}ac.resume&&ac.resume();an=ac.createAnalyser();an.fftSize=1024;ac.createMediaStreamSource(mic).connect(an)}catch{an=null}return true}catch(e){micErr=(e&&e.name)||'error';mic=null;return false}}
-function micOff(){try{mic&&mic.getTracks().forEach(t=>t.stop())}catch{}try{ac&&ac.close()}catch{}mic=ac=an=null;const o=$('.orb');if(o)o.style.boxShadow=''}
 const lvl=()=>{if(!an)return 0;const b=new Uint8Array(an.fftSize);an.getByteTimeDomainData(b);let s=0;for(const x of b){const d=(x-128)/128;s+=d*d}return Math.sqrt(s/b.length)};
 async function stt(b){
  const ext=/mp4|aac/.test(b.type)?'mp4':/ogg/.test(b.type)?'ogg':'webm';let er;
@@ -344,47 +330,85 @@ async function stt(b){
  const d=(await rd(b)).split(',')[1];
  const r=await fetch(G+'gemini-flash-latest:generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},body:JSON.stringify({contents:[{parts:[{text:'Transcribe this audio word for word. Reply with only the transcript and nothing else. If there is no clear speech, reply with nothing.'},{inlineData:{mimeType:(b.type||'audio/webm').split(';')[0],data:d}}]}]})});
  const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);return((j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('')).trim()}
-function listenRec(){return new Promise(ok=>{
- if(!vcOn||!mic)return ok('');
- const mt=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'].find(t=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))||'',ch=[],o=$('.orb');
- let mr;try{mr=new MediaRecorder(mic,mt?{mimeType:mt}:undefined)}catch{return ok('')}
- let st=0,last=0,dead=0,nf=.01,iv;const t0=Date.now();
- mr.ondataavailable=e=>{e.data&&e.data.size&&ch.push(e.data)};
- mr.onstop=async()=>{clearInterval(iv);if(o)o.style.boxShadow='';if(dead||!st||last-st<350)return ok('');vcSt('Thinking…');try{ok(await stt(new Blob(ch,{type:mr.mimeType||mt||'audio/webm'})))}catch(e){toast(String(e.message||e).slice(0,120));ok('')}};
- rec={abort(){dead=1;try{mr.state!=='inactive'&&mr.stop()}catch{}}};
- try{mr.start()}catch{return ok('')}
- iv=setInterval(()=>{if(!vcOn){rec.abort();return}if(ac&&ac.state==='suspended')try{ac.resume()}catch{}
-  const live=an&&ac&&ac.state==='running',v=lvl(),th=Math.max(.03,nf*3),n=Date.now();
-  if(o)o.style.boxShadow='0 0 '+Math.round(40+Math.min(v*9,1)*70)+'px #a855f7cc,0 0 '+Math.round(90+Math.min(v*9,1)*110)+'px #ec4899aa';
-  if(!live){if(!st)st=n;last=n}else if(v>th){if(!st)st=n;last=n}else nf=nf*.95+v*.05;
-  if((st&&n-last>1300)||(!live&&n-t0>6000)||n-t0>(st?25000:9000)){clearInterval(iv);try{mr.stop()}catch{}}},60)})}
-const listen=()=>{if(mic&&!mic.getAudioTracks().some(t=>t.readyState==='live')){toast('The microphone was interrupted, so the call ended');vcEnd();return Promise.resolve('')}return mic?listenRec():listenSR()};
 async function vcTurn(t){const c=chats.find(x=>x.id===cur)||newChat();c.m.push({r:'user',t});if(c.title==='New chat')c.title=t.slice(0,34);save();render();list();
  const h=c.m.filter(x=>!x.img&&!x.t.startsWith('⚠️')).slice(-12).map(x=>({r:x.r,t:x.t}));while(h.length&&h[0].r!=='user')h.shift();
  const a=await ask(h,SYS.chat+' You are on a live voice call, speaking with the male voice named '+vo.n+'. Reply as spoken words: warm and natural, one to three short sentences, no markdown, lists, emojis or code.');
  c.m.push({r:'assistant',t:a});save();render();list();return a}
-async function vcRun(){vcSt('Speaking…');await say('Hey, it’s '+vo.n+'. What’s on your mind?');
- while(vcOn){if(vcHi){vcHi=0;vcSt('Speaking…');await say('I’m '+vo.n+'. Go ahead.');continue}
-  vcSt('Listening…');const t0=Date.now(),t=await listen();if(!vcOn)break;if(vcHi||!t){if(Date.now()-t0<400)await new Promise(r=>setTimeout(r,500));continue}
-  vcSt('Thinking…');try{const a=await vcTurn(t);if(!vcOn)break;vcSt('Speaking…');await say(vcClean(a))}catch(e){toast(String(e.message||e).slice(0,120));vcEnd()}}}
+// voice calls, rewritten for WebView apps (Appilix): tap the orb to send if auto-detect can't hear you
+let vo=VO.find(v=>v.n===K.vo)||VO[0],vcOn=false,vcHi=0,vcTok=0,vcBusy=false,rec=null,tapGo=null,mic=null,ac=null,an=null,micErr='',vcDbg={};
+const HAL=/^\W*(thank you|thanks for watching|you|bye)\W*$/i;
+const vcSt=t=>{$('#vs').textContent=t},vcCap=t=>{const e=$('#vt');if(e)e.textContent=t},vcInfo=()=>{const e=$('#vi');if(e)e.textContent=Object.entries(vcDbg).map(([k,v])=>k+': '+v).join(' · ')};
+function vcUi(){if($('#vt'))return;const v=$('#vc'),c=document.createElement('p'),i=document.createElement('p');c.className=i.className='mu';c.id='vt';c.style.cssText='max-width:90%;max-height:22vh;overflow-y:auto;font-size:14px';i.id='vi';i.style.cssText='font-size:11px;opacity:.7';v.insertBefore(c,$('#vl'));v.insertBefore(i,$('#vl'))}
+const micMsg=()=>micErr==='insecure'?'Voice calls need the site to load over https://':micErr==='Timeout'?'The microphone request got no answer. Turn on Microphone Access in the app settings, rebuild the app and allow it in your phone’s settings':/NotAllowed|Security/.test(micErr)?'Microphone is blocked. Turn on Microphone Access in the app settings and allow it in your phone’s settings':micErr==='NotFoundError'?'No microphone found on this device':'Microphone isn’t available here. In the app, turn on Microphone Access in the app settings';
+const gum=c=>new Promise((ok,no)=>{let d=0;const t=setTimeout(()=>{d=1;no({name:'Timeout'})},20000);navigator.mediaDevices.getUserMedia(c).then(m=>{clearTimeout(t);d?m.getTracks().forEach(x=>x.stop()):ok(m)},e=>{clearTimeout(t);d||no(e)})});
+async function micOn(){
+ if(mic)return true;micErr='';const md=navigator.mediaDevices;
+ if(!md||!md.getUserMedia){micErr=window.isSecureContext===false?'insecure':'unsupported';return false}
+ try{try{mic=await gum({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}})}catch(e){if(e&&/NotAllowed|Security|NotFound|Timeout/.test(e.name))throw e;mic=await gum({audio:true})}}catch(e){micErr=(e&&e.name)||'error';mic=null;return false}
+ try{const AC=window.AudioContext||window.webkitAudioContext;if(!ac||ac.state==='closed')ac=new AC();Promise.resolve(ac.resume()).catch(()=>{});an=ac.createAnalyser();an.fftSize=1024;ac.createMediaStreamSource(mic).connect(an)}catch{an=null}
+ return true}
+function micOff(){try{mic&&mic.getTracks().forEach(t=>t.stop())}catch{}try{ac&&ac.close()}catch{}mic=ac=an=null;const o=$('#vc .orb');if(o)o.style.boxShadow=''}
+function say(t){return new Promise(ok=>{
+ const S=window.speechSynthesis;let d=0,wd,ws;const fin=()=>{if(d)return;d=1;clearTimeout(wd);clearTimeout(ws);ok()};
+ if(!S||!t)return fin();
+ const ps=(t.match(/[^.!?]+[.!?]*\s*/g)||[t]).map(x=>x.trim()).filter(Boolean),v=vcVoice();
+ wd=setTimeout(()=>{try{S.cancel()}catch{}fin()},Math.min(60000,5000+t.length*120));
+ try{S.cancel();S.resume()}catch{}
+ setTimeout(()=>{if(d||!vcOn)return fin();let go=0;
+  ps.forEach((x,k)=>{const u=new SpeechSynthesisUtterance(x);if(v){u.voice=v;u.lang=v.lang}u.pitch=vo.p;u.rate=vo.r;if(k===0)u.onstart=()=>{go=1;clearTimeout(ws)};if(k===ps.length-1)u.onend=u.onerror=fin;S.speak(u)});
+  ws=setTimeout(()=>{if(!go){vcDbg.voice='silent (showing text)';vcInfo();try{S.cancel()}catch{}fin()}},4500)},80)})}
+function listen(){return new Promise(ok=>{
+ if(!vcOn||!mic)return ok('');
+ if(!mic.getAudioTracks().some(t=>t.readyState==='live')){toast('The microphone was interrupted, so the call ended');vcEnd();return ok('')}
+ const mt=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'].find(t=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))||'',ch=[],o=$('#vc .orb'),auto=()=>!!(an&&ac&&ac.state==='running');
+ let mr;try{mr=new MediaRecorder(mic,mt?{mimeType:mt}:undefined)}catch(e){toast('Recording isn’t supported here');vcEnd();return ok('')}
+ let st=0,last=0,nf=.01,iv,done=0,drop=0,tap=0,am=auto();const t0=Date.now();
+ const fin=()=>{if(done)return;done=1;clearInterval(iv);tapGo=null;try{if(mr.state!=='inactive')mr.stop();else ok('')}catch{ok('')}};
+ const msg=()=>vcSt(am?'Listening…':'Speak, then tap the orb to send');
+ mr.ondataavailable=e=>{e.data&&e.data.size&&ch.push(e.data)};
+ mr.onerror=()=>{drop=1;fin();ok('')};
+ mr.onstop=async()=>{clearInterval(iv);if(o)o.style.boxShadow='';const b=new Blob(ch,{type:mr.mimeType||mt||'audio/webm'});
+  if(drop||!vcOn||!(tap||(st&&last-st>=350))||b.size<1200)return ok('');
+  vcSt('Thinking…');try{ok(await stt(b))}catch(e){toast(String(e.message||e).slice(0,120));ok('')}};
+ rec={abort(){drop=1;fin()}};tapGo=()=>{tap=1;fin()};
+ try{mr.start()}catch(e){toast('Recording failed to start');vcEnd();return ok('')}
+ vcDbg.audio=ac?ac.state:'none';vcInfo();msg();
+ iv=setInterval(()=>{if(!vcOn){drop=1;fin();return}
+  if(ac&&ac.state==='suspended')try{ac.resume().catch(()=>{})}catch{}
+  const n=Date.now(),a=auto();if(a!==am){am=a;msg()}
+  if(a){const v=lvl(),th=Math.max(.03,nf*3);
+   if(o)o.style.boxShadow='0 0 '+Math.round(40+Math.min(v*9,1)*70)+'px #a855f7cc,0 0 '+Math.round(90+Math.min(v*9,1)*110)+'px #ec4899aa';
+   if(v>th){if(!st)st=n;last=n}else nf=nf*.95+v*.05;
+   if((st&&n-last>1300)||n-t0>(st?25000:9000))fin()}
+  else if(n-t0>25000){tap=1;fin()}},60)})}
+async function vcRun(){
+ const tk=vcTok,live=()=>vcOn&&tk===vcTok;
+ vcSt('Speaking…');await say('Hey, it’s '+vo.n+'. What’s on your mind?');
+ while(live()){
+  if(vcHi){vcHi=0;vcSt('Speaking…');await say('I’m '+vo.n+'. Go ahead.');continue}
+  const t0=Date.now(),t=await listen();if(!live())break;
+  if(vcHi||!t||t.length<2||HAL.test(t)){if(Date.now()-t0<400)await new Promise(r=>setTimeout(r,500));continue}
+  vcCap('You: '+t);vcSt('Thinking…');
+  try{const a=await vcTurn(t);if(!live())break;const c=vcClean(a);vcCap(c);vcSt('Speaking…');await say(c)}catch(e){toast(String(e.message||e).slice(0,120));vcEnd()}}}
 async function vcStart(){
  if(vcOn||vcBusy)return;
- if(busy)return toast('Wait for the reply to finish, then start the call');
+ if(busy)return toast('Wait for the reply to finish, then call');
  if(!U)return toast('Sign in first to start a call');
- if(!window.speechSynthesis)return toast('This device can’t speak replies, so voice calls won’t work here');
- if(!REC&&!SR){micErr=window.isSecureContext===false?'insecure':'unsupported';return toast(micMsg())}
  if(!K.groq&&!K.gemini)return toast('Add a Groq key in the setup first.');
+ if(!navigator.mediaDevices||!window.MediaRecorder){micErr=window.isSecureContext===false?'insecure':'unsupported';return toast(micMsg())}
  vcBusy=true;const tk=++vcTok;
- try{speechSynthesis.speak(new SpeechSynthesisUtterance(''))}catch{}
- try{if(!ac){const AC=window.AudioContext||window.webkitAudioContext;if(AC){ac=new AC();ac.resume&&ac.resume()}}}catch{}
- vcPick();vcSt('Connecting…');$('#vc').classList.remove('hide');
- const ok=REC?await micOn():false;vcBusy=false;
+ try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch{}
+ try{const AC=window.AudioContext||window.webkitAudioContext;if(AC&&(!ac||ac.state==='closed'))ac=new AC();if(ac)Promise.resolve(ac.resume()).catch(()=>{})}catch{}
+ vcUi();vcCap('');vcDbg={mic:'asking…'};vcInfo();vcPick();vcSt('Connecting…');$('#vc').classList.remove('hide');
+ const ok=await micOn();vcBusy=false;
  if(tk!==vcTok){micOff();return}
- if(REC&&!ok&&!SR){vcEnd();return toast(micMsg())}
+ if(!ok){vcEnd();return toast(micMsg())}
+ vcDbg={mic:'ok',audio:ac?ac.state:'none',voices:window.speechSynthesis?speechSynthesis.getVoices().length:'none'};vcInfo();
  vcOn=true;vcHi=0;vcRun()}
-function vcEnd(){vcTok++;vcOn=false;try{rec&&rec.abort()}catch{}micOff();speechSynthesis.cancel();$('#vc').classList.add('hide')}
-$('#cl').onclick=vcStart;$('#ve').onclick=vcEnd;
-$('#vl').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;vo=VO.find(v=>v.n===b.dataset.v);K.vo=vo.n;L.setItem('groq.keys',JSON.stringify(K));vcPick();vcHi=1;speechSynthesis.cancel();try{rec&&rec.abort()}catch{}};
+function vcEnd(){vcTok++;vcOn=false;tapGo=null;try{rec&&rec.abort()}catch{}micOff();try{speechSynthesis.cancel()}catch{}$('#vc').classList.add('hide')}
+$('#cl').onclick=vcStart;$('#ve').onclick=vcEnd;$('#vc .orb').onclick=()=>{tapGo&&tapGo()};
+$('#vl').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;vo=VO.find(v=>v.n===b.dataset.v);K.vo=vo.n;L.setItem('groq.keys',JSON.stringify(K));vcPick();vcHi=1;try{speechSynthesis.cancel()}catch{}try{rec&&rec.abort()}catch{}};
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&vcOn)vcEnd()});
 // + menu: camera, photos, files
 const rd=(f,t)=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;t?r.readAsText(f):r.readAsDataURL(f)});
 function strip(){const e=$('#at');e.classList.toggle('hide',!A.length);e.innerHTML=A.map((a,i)=>'<div class="at">'+(a.k==='img'?'<img src="'+a.th+'" alt="">':'<span>'+(a.k==='pdf'?'📕 ':'📄 ')+esc(a.n)+'</span>')+'<b data-x="'+i+'">✕</b></div>').join('')}
