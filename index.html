@@ -110,6 +110,9 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 .rn{width:100%;background:transparent;border:0;border-bottom:1px solid var(--v);outline:none;font:inherit;color:inherit;padding:2px 0}
 #cb{position:fixed;inset:0;z-index:40}
 #cm{position:fixed;bottom:auto;min-width:160px;z-index:41}
+.opt span,#ml{font-weight:600;text-shadow:0 0 8px #a855f7aa,0 0 16px #38bdf866}
+@keyframes gl{from{text-shadow:0 0 8px #38bdf8,0 0 16px #38bdf866}50%{text-shadow:0 0 8px #a855f7,0 0 16px #a855f766}to{text-shadow:0 0 8px #ff3d9a,0 0 16px #ff3d9a66}}
+@media(prefers-reduced-motion:no-preference){.opt span,#ml{animation:gl 3.5s ease-in-out infinite alternate}}
 </style></head><body>
 
 <div id="auth" class="scr">
@@ -156,7 +159,7 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 <label>Groq API key (<a href="https://console.groq.com/keys" target="_blank" rel="noopener">get one</a>)</label><input id="kg" type="password" autocomplete="off" placeholder="gsk_…">
 <label>Gemini API key (<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">get one</a>)</label><input id="kj" type="password" autocomplete="off" placeholder="AIza…">
 <label>Google Client ID (enables Google sign-in)</label><input id="ci" placeholder="123…apps.googleusercontent.com">
-<p class="mu">Version 4. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
+<p class="mu">Version 5. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
 <button class="btn" id="sv">Save</button><button class="btn o" id="sx">Close</button></div></div>
 <div id="sb" class="hide"></div>
 <div id="ms" class="hide"><b class="gt">Choose model</b><div id="mr"></div><button class="btn" id="sd">Done</button></div>
@@ -182,8 +185,8 @@ games:{ph:'Describe a game…',hi:'What shall we play?',ch:['Build Snake with to
 const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3200)};
 const G='https://generativelanguage.googleapis.com/v1beta/models/';
 
-const VIS='meta-llama/llama-4-scout-17b-16e-instruct';
-const MD=[['mg','Groq model',['openai/gpt-oss-120b','openai/gpt-oss-20b','groq/compound','groq/compound-mini','llama-3.3-70b-versatile','llama-3.1-8b-instant']],['mj','Gemini model',['gemini-flash-latest','gemini-flash-lite-latest','gemini-pro-latest','gemini-2.5-flash','gemini-2.5-pro']],['mi','Image model',['gemini-2.5-flash-image','gemini-3-pro-image-preview','pollinations']]];
+const ARG='gemini-4-argon';const VIS='meta-llama/llama-4-scout-17b-16e-instruct';
+const MD=[['mg','Groq model',['openai/gpt-oss-120b','openai/gpt-oss-20b','groq/compound','groq/compound-mini','llama-3.3-70b-versatile','llama-3.1-8b-instant']],['mj','Gemini model',['gemini-flash-latest','gemini-flash-lite-latest','gemini-pro-latest','gemini-2.5-flash','gemini-2.5-pro','gemini-4-argon']],['mi','Image model',['gemini-2.5-flash-image','gemini-3-pro-image-preview','pollinations']]];
 async function gq(m,s,ax=[]){
  if(ax.some(a=>a.k==='pdf'))throw new Error('Groq cannot read PDFs. Choose Gemini for this one.');
  const v=ax.filter(a=>a.k==='img'),n=m.length-1,mo=v.length?VIS:(K.mg||MD[0][2][0]);
@@ -205,7 +208,7 @@ async function ask(m,s,ax=[]){
  m=m.map((x,i)=>x.r==='assistant'&&/clock|real-?time/i.test(x.t)&&/(don.?t|can.?t|cannot|not) (have|know|access|give|tell)/i.test(x.t)?{...x,t:'(earlier reply omitted)'}:i===m.length-1&&x.r==='user'?{...x,t:'['+ctx+']\n\n'+x.t}:x);
  let o=K.prov==='gemini'?['gemini','groq']:K.prov==='groq'?['groq','gemini']:K.groq?['groq','gemini']:['gemini','groq'];
  if(ax.length&&K.prov!=='groq'&&K.prov!=='gemini')o=['gemini','groq'];
- let er;for(const p of o){if(!K[p])continue;try{return await(p==='groq'?gq:gm)(m,s,ax)}catch(e){er=e}}
+ let er,fb=0;for(const p of o){if(!K[p])continue;try{const a=await(p==='groq'?gq:gm)(m,s,ax);return fb?'⚠️ Your chosen model failed ('+String(er.message||er).slice(0,90)+'), so a backup model answered.\n\n'+a:a}catch(e){er=e;fb=1}}
  throw er||new Error('Add a Groq or Gemini key in the setup first.')}
 async function img(p){
  if(K.gemini&&K.mi!=='pollinations')try{
@@ -313,13 +316,14 @@ $('#at').onclick=e=>{const x=e.target.closest('[data-x]');if(x){A.splice(+x.data
 // model picker (the model you pick decides Groq or Gemini)
 const pvd=()=>K.prov==='gemini'||K.prov==='groq'?K.prov:(K.groq||!K.gemini?'groq':'gemini');
 const sk=()=>{L.setItem('groq.keys',JSON.stringify(K));chip()},sh=v=>v.split('/').pop(),nm=v=>v==='pollinations'?'Free (no key)':v,mk=()=>pvd()==='groq'?'mg':'mj';
-function chip(){const p=pvd();$('#ml').textContent=(p==='groq'?'Groq · ':'Gemini · ')+sh(K[mk()]||MD[p==='groq'?0:1][2][0])}
+const lb=v=>v==='pollinations'?'Free (no key)':'Groq '+v.replace(/^[^/]+\//,'').replace(/^(llama|gemini|gemma)-/,'').split('-').map(w=>/^\d+b$/i.test(w)||/^(gpt|oss)$/i.test(w)?w.toUpperCase():w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+function chip(){const p=pvd();$('#ml').textContent=lb(K[mk()]||MD[p==='groq'?0:1][2][0])}
 function ms(o){$('#ms').classList.toggle('hide',!o);$('#sb').classList.toggle('hide',!o);if(!o)return;
  const p=pvd(),l=MD[p==='groq'?0:1][2],v=K[mk()]||l[0],c=!l.includes(v),im=K.mi||MD[2][2][0],ic=!MD[2][2].includes(im);
  const rw=(g,d,t,on)=>'<button type="button" class="opt'+(on?' on':'')+'" data-g="'+g+'" data-v="'+d+'"><span>'+t+'</span><i></i></button>';
- const og=(pp,a)=>'<div class="gh">'+(pp==='groq'?'Groq':'Gemini')+'</div>'+a.map(x=>rw('m',pp+':'+x,x,p===pp&&x===v)).join('');
- $('#mr').innerHTML=og('groq',MD[0][2])+og('gemini',MD[1][2])+'<div class="gh">Other</div>'+rw('m','_g','Custom Groq model…',c&&p==='groq')+rw('m','_j','Custom Gemini model…',c&&p==='gemini')+'<input id="xc" placeholder="Model ID" class="'+(c?'':'hide')+'">'
- +'<div class="gh">Image model</div>'+MD[2][2].map(x=>rw('i',x,nm(x),x===im)).join('')+rw('i','_c','Custom image model…',ic)+'<input id="yc" placeholder="Model ID" class="'+(ic?'':'hide')+'">'
+ const all=[...MD[1][2].filter(x=>x===ARG).map(x=>['gemini',x]),...MD[0][2].map(x=>['groq',x]),...MD[1][2].filter(x=>x!==ARG).map(x=>['gemini',x])];
+ $('#mr').innerHTML='<div class="gh">Groq</div>'+all.map(([pp,x])=>rw('m',pp+':'+x,lb(x),p===pp&&x===v)).join('')+rw('m','_g','Custom model…',c)+'<input id="xc" placeholder="Model ID" class="'+(c?'':'hide')+'">'
+ +'<div class="gh">Image model</div>'+MD[2][2].map(x=>rw('i',x,lb(x),x===im)).join('')+rw('i','_c','Custom image model…',ic)+'<input id="yc" placeholder="Model ID" class="'+(ic?'':'hide')+'">'
  +'<div class="gh">Tools</div>'+rw('w','ws','🌐 Web search',K.ws!==false);
  $('#xc').value=K[mk()]||'';$('#yc').value=K.mi||''}
 $('#mb').onclick=()=>ms(1);$('#sb').onclick=$('#sd').onclick=()=>ms(0);
@@ -327,9 +331,9 @@ $('#mr').onclick=e=>{const b=e.target.closest('.opt');if(!b)return;const g=b.dat
  if(g==='w'){K.ws=K.ws===false;b.classList.toggle('on',K.ws!==false);return sk()}
  $$('#mr .opt[data-g="'+g+'"]').forEach(x=>x.classList.toggle('on',x===b));
  if(g==='i'){if(v==='_c'){$('#yc').classList.remove('hide');$('#yc').focus()}else{$('#yc').classList.add('hide');K.mi=v}return sk()}
- if(v[0]==='_'){K.prov=v==='_g'?'groq':'gemini';const i=$('#xc');i.value=K[mk()]||'';i.classList.remove('hide');i.focus()}
+ if(v==='_g'){const i=$('#xc');i.value=K[mk()]||'';i.classList.remove('hide');i.focus()}
  else{const i=v.indexOf(':');K.prov=v.slice(0,i);K[mk()]=v.slice(i+1);$('#xc').classList.add('hide')}sk()};
-$('#mr').oninput=e=>{const t=e.target;if(t.id==='xc'){K[mk()]=t.value.trim();sk()}if(t.id==='yc'){K.mi=t.value.trim();sk()}};
+$('#mr').oninput=e=>{const t=e.target;if(t.id==='xc'){const x=t.value.trim(),g=/^(models\/)?(gemini|gemma)/i.test(x);K.prov=g?'gemini':'groq';K[g?'mj':'mg']=x;sk()}if(t.id==='yc'){K.mi=t.value.trim();sk()}};
 chip();
 
 // email sign-in (accounts stay on this device)
