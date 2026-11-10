@@ -113,6 +113,14 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 .opt span,#ml{font-weight:600;text-shadow:0 0 8px #a855f7aa,0 0 16px #38bdf866}
 @keyframes gl{from{text-shadow:0 0 8px #38bdf8,0 0 16px #38bdf866}50%{text-shadow:0 0 8px #a855f7,0 0 16px #a855f766}to{text-shadow:0 0 8px #ff3d9a,0 0 16px #ff3d9a66}}
 @media(prefers-reduced-motion:no-preference){.opt span,#ml{animation:gl 3.5s ease-in-out infinite alternate}}
+.gt,.gh{background-image:var(--mv);background-size:200% 100%}
+.ci.ed{background:#ffffff14;box-shadow:0 0 0 1px #a855f7,0 0 18px #a855f755}
+.rn{background:var(--mv) 0 100%/200% 2px no-repeat;border-bottom:0}
+@keyframes ul{to{background-position:100% 100%}}
+@keyframes edin{from{transform:scale(.94);opacity:.5}to{transform:none;opacity:1}}
+@keyframes rdn{0%{box-shadow:0 0 0 #ff3d9a00;transform:scale(.96)}35%{box-shadow:0 0 26px #ff3d9a,0 0 10px #38bdf8;transform:scale(1.04)}100%{box-shadow:0 0 0 #a855f700;transform:none}}
+@keyframes typ{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@media(prefers-reduced-motion:no-preference){.gt,.gh{animation:mvf 3.5s ease-in-out infinite alternate}.ci.ed{animation:edin .28s cubic-bezier(.2,.9,.3,1.3)}.rn{animation:ul 2.5s linear infinite alternate}.ci.dn{animation:rdn .9s ease}.ci.dn span{animation:typ .8s steps(22,end)}}
 </style></head><body>
 
 <div id="auth" class="scr">
@@ -159,7 +167,7 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 <label>Groq API key (<a href="https://console.groq.com/keys" target="_blank" rel="noopener">get one</a>)</label><input id="kg" type="password" autocomplete="off" placeholder="gsk_…">
 <label>Gemini API key (<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">get one</a>)</label><input id="kj" type="password" autocomplete="off" placeholder="AIza…">
 <label>Google Client ID (enables Google sign-in)</label><input id="ci" placeholder="123…apps.googleusercontent.com">
-<p class="mu">Version 5. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
+<p class="mu">Version 6. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
 <button class="btn" id="sv">Save</button><button class="btn o" id="sx">Close</button></div></div>
 <div id="sb" class="hide"></div>
 <div id="ms" class="hide"><b class="gt">Choose model</b><div id="mr"></div><button class="btn" id="sd">Done</button></div>
@@ -208,7 +216,7 @@ async function ask(m,s,ax=[]){
  m=m.map((x,i)=>x.r==='assistant'&&/clock|real-?time/i.test(x.t)&&/(don.?t|can.?t|cannot|not) (have|know|access|give|tell)/i.test(x.t)?{...x,t:'(earlier reply omitted)'}:i===m.length-1&&x.r==='user'?{...x,t:'['+ctx+']\n\n'+x.t}:x);
  let o=K.prov==='gemini'?['gemini','groq']:K.prov==='groq'?['groq','gemini']:K.groq?['groq','gemini']:['gemini','groq'];
  if(ax.length&&K.prov!=='groq'&&K.prov!=='gemini')o=['gemini','groq'];
- let er,fb=0;for(const p of o){if(!K[p])continue;try{const a=await(p==='groq'?gq:gm)(m,s,ax);return fb?'⚠️ Your chosen model failed ('+String(er.message||er).slice(0,90)+'), so a backup model answered.\n\n'+a:a}catch(e){er=e;fb=1}}
+ let er,fb=0;for(const p of o){if(!K[p])continue;try{const a=await(p==='groq'?gq:gm)(m,s,ax);return fb?'⚠️ '+(/quota|billing|exceed|free tier|permission/i.test(String(er.message||er))?'Your chosen model needs a paid plan or hit its limit':'Your chosen model failed ('+String(er.message||er).slice(0,90)+')')+', so a backup model answered.\n\n'+a:a}catch(e){er=e;fb=1}}
  throw er||new Error('Add a Groq or Gemini key in the setup first.')}
 async function img(p){
  if(K.gemini&&K.mi!=='pollinations')try{
@@ -235,8 +243,8 @@ function render(){
  const l=box.querySelector('.m:last-child');
  if(toTop&&l&&l.classList.contains('assistant'))box.scrollTop+=l.getBoundingClientRect().top-box.getBoundingClientRect().top-8;
  toTop=false}
-let rid=null;
-function list(){$('#list').innerHTML=chats.filter(c=>c.tab===tab&&c.m.length).sort((a,b)=>!!b.pin-!!a.pin).map(c=>'<div class="ci'+(c.id===cur?' on':'')+'" data-id="'+c.id+'">'+(rid===c.id?'<input class="rn" maxlength="60">':'<span>'+(c.pin?'📌 ':'')+esc(c.title)+'</span>')+'</div>').join('')||'<p class="mu">Your chats will be saved here. Hold one for Pin, Rename and Delete.</p>';
+let rid=null,rdn=null;
+function list(){$('#list').innerHTML=chats.filter(c=>c.tab===tab&&c.m.length).sort((a,b)=>!!b.pin-!!a.pin).map(c=>'<div class="ci'+(c.id===cur?' on':'')+(rid===c.id?' ed':'')+(rdn===c.id?' dn':'')+'" data-id="'+c.id+'">'+(rid===c.id?'<input class="rn" maxlength="60">':'<span>'+(c.pin?'📌 ':'')+esc(c.title)+'</span>')+'</div>').join('')||'<p class="mu">Your chats will be saved here. Hold one for Pin, Rename and Delete.</p>';
  const ri=$('#list .rn');if(ri){ri.value=chats.find(x=>x.id===rid).title;ri.focus();ri.select()}}
 
 async function send(txt){
@@ -362,7 +370,7 @@ L2.addEventListener('pointermove',e=>{if(Math.hypot(e.clientX-sx,e.clientY-sy)>1
 ['pointerup','pointercancel','pointerleave'].forEach(t=>L2.addEventListener(t,()=>clearTimeout(lp)));
 L2.oncontextmenu=e=>{if(e.target.closest('.ci'))e.preventDefault()};
 L2.onclick=e=>{if(lf){lf=false;return}if(e.target.classList.contains('rn'))return;const i=e.target.closest('.ci');if(i){cur=i.dataset.id;render();list();dr(0)}};
-const rn=ok=>{if(!rid)return;const c=chats.find(x=>x.id===rid),v=($('#list .rn')?.value||'').trim();if(ok&&c&&v)c.title=v.slice(0,60);rid=null;save();list()};
+const rn=ok=>{if(!rid)return;const c=chats.find(x=>x.id===rid),v=($('#list .rn')?.value||'').trim();if(ok&&c&&v&&v!==c.title){c.title=v.slice(0,60);rdn=rid}rid=null;if(rdn)setTimeout(()=>{rdn=null},1000);save();list()};
 L2.addEventListener('keydown',e=>{if(e.target.classList.contains('rn')){if(e.key==='Enter'){e.preventDefault();rn(1)}if(e.key==='Escape')rn(0)}});
 L2.addEventListener('focusout',e=>{if(e.target.classList.contains('rn'))rn(1)});
 $('#cb').onclick=cx;
