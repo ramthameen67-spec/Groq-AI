@@ -328,7 +328,33 @@ const vcClean=t=>t.replace(/^(ℹ️|⚠️)[^\n]*\n*/,'').replace(/```[\s\S]*?`
 const vcPick=()=>{$('#vn').textContent=vo.n;$('#vl').innerHTML=VO.map(v=>'<button type="button" class="chip'+(v===vo?' on':'')+'" data-v="'+v.n+'">'+v.n+'</button>').join('')};
 function vcVoice(){const all=speechSynthesis.getVoices(),lg=(navigator.language||'en').slice(0,2).toLowerCase(),L2=all.filter(v=>v.lang.toLowerCase().startsWith(lg)),m=L2.filter(v=>MALE.test(v.name)),pool=m.length?m:L2;return pool.length?pool[VO.indexOf(vo)%pool.length]:null}
 function say(t){return new Promise(ok=>{const ps=(t.match(/[^.!?]+[.!?]*\s*/g)||[t]).map(x=>x.trim()).filter(Boolean),v=vcVoice();if(!ps.length||!window.speechSynthesis)return ok();speechSynthesis.cancel();ps.forEach((x,i)=>{const u=new SpeechSynthesisUtterance(x);if(v){u.voice=v;u.lang=v.lang}u.pitch=vo.p;u.rate=vo.r;if(i===ps.length-1)u.onend=u.onerror=ok;speechSynthesis.speak(u)})})}
-function listen(){return new Promise(ok=>{if(!vcOn)return ok('');const r=rec=new SR();r.lang=navigator.language||'en-US';r.interimResults=false;let t='';r.onresult=e=>{t=[...e.results].map(x=>x[0].transcript).join(' ')};r.onerror=e=>{if(/not-allowed|service-not-allowed/.test(e.error)){vcOn=false;toast('Allow the microphone to use voice calls')}};r.onend=()=>ok(t.trim());try{r.start()}catch{ok('')}})}
+function listenSR(){return new Promise(ok=>{if(!vcOn)return ok('');const r=rec=new SR();r.lang=navigator.language||'en-US';r.interimResults=false;let t='';r.onresult=e=>{t=[...e.results].map(x=>x[0].transcript).join(' ')};r.onerror=e=>{if(/not-allowed|service-not-allowed/.test(e.error)){vcOn=false;toast('Allow the microphone to use voice calls')}};r.onend=()=>ok(t.trim());try{r.start()}catch{ok('')}})}
+const REC=!!(window.MediaRecorder&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
+let mic=null,ac=null,an=null;
+async function micOn(){if(mic)return true;try{mic=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});try{const AC=window.AudioContext||window.webkitAudioContext;ac=new AC();ac.resume&&ac.resume();an=ac.createAnalyser();an.fftSize=1024;ac.createMediaStreamSource(mic).connect(an)}catch{an=null}return true}catch{mic=null;return false}}
+function micOff(){try{mic&&mic.getTracks().forEach(t=>t.stop())}catch{}try{ac&&ac.close()}catch{}mic=ac=an=null;const o=$('.orb');if(o)o.style.boxShadow=''}
+const lvl=()=>{if(!an)return 0;const b=new Uint8Array(an.fftSize);an.getByteTimeDomainData(b);let s=0;for(const x of b){const d=(x-128)/128;s+=d*d}return Math.sqrt(s/b.length)};
+async function stt(b){
+ const ext=/mp4|aac/.test(b.type)?'mp4':/ogg/.test(b.type)?'ogg':'webm';let er;
+ if(K.groq)try{const f=new FormData();f.append('file',b,'voice.'+ext);f.append('model','whisper-large-v3-turbo');f.append('temperature','0');const r=await fetch('https://api.groq.com/openai/v1/audio/transcriptions',{method:'POST',headers:{Authorization:'Bearer '+K.groq},body:f});const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);return(j.text||'').trim()}catch(e){er=e;if(!K.gemini)throw e}
+ const d=(await rd(b)).split(',')[1];
+ const r=await fetch(G+'gemini-flash-latest:generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},body:JSON.stringify({contents:[{parts:[{text:'Transcribe this audio word for word. Reply with only the transcript and nothing else. If there is no clear speech, reply with nothing.'},{inlineData:{mimeType:(b.type||'audio/webm').split(';')[0],data:d}}]}]})});
+ const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);return((j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('')).trim()}
+function listenRec(){return new Promise(ok=>{
+ if(!vcOn||!mic)return ok('');
+ const mt=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'].find(t=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))||'',ch=[],o=$('.orb');
+ let mr;try{mr=new MediaRecorder(mic,mt?{mimeType:mt}:undefined)}catch{return ok('')}
+ let st=0,last=0,dead=0,nf=.01,iv;const t0=Date.now();
+ mr.ondataavailable=e=>{e.data&&e.data.size&&ch.push(e.data)};
+ mr.onstop=async()=>{clearInterval(iv);if(o)o.style.boxShadow='';if(dead||!st||last-st<350)return ok('');vcSt('Thinking…');try{ok(await stt(new Blob(ch,{type:mr.mimeType||mt||'audio/webm'})))}catch(e){toast(String(e.message||e).slice(0,120));ok('')}};
+ rec={abort(){dead=1;try{mr.state!=='inactive'&&mr.stop()}catch{}}};
+ try{mr.start()}catch{return ok('')}
+ iv=setInterval(()=>{if(!vcOn){rec.abort();return}
+  const v=lvl(),th=Math.max(.03,nf*3),n=Date.now();
+  if(o)o.style.boxShadow='0 0 '+Math.round(40+Math.min(v*9,1)*70)+'px #a855f7cc,0 0 '+Math.round(90+Math.min(v*9,1)*110)+'px #ec4899aa';
+  if(v>th){if(!st)st=n;last=n}else nf=nf*.95+v*.05;
+  if((st&&n-last>1300)||n-t0>(st?25000:9000)){clearInterval(iv);try{mr.stop()}catch{}}},60)})}
+const listen=()=>mic?listenRec():listenSR();
 async function vcTurn(t){const c=chats.find(x=>x.id===cur)||newChat();c.m.push({r:'user',t});if(c.title==='New chat')c.title=t.slice(0,34);save();render();list();
  const h=c.m.filter(x=>!x.img&&!x.t.startsWith('⚠️')).slice(-12).map(x=>({r:x.r,t:x.t}));while(h.length&&h[0].r!=='user')h.shift();
  const a=await ask(h,SYS.chat+' You are on a live voice call, speaking with the male voice named '+vo.n+'. Reply as spoken words: warm and natural, one to three short sentences, no markdown, lists, emojis or code.');
@@ -337,8 +363,11 @@ async function vcRun(){vcSt('Speaking…');await say('Hey, it’s '+vo.n+'. What
  while(vcOn){if(vcHi){vcHi=0;vcSt('Speaking…');await say('I’m '+vo.n+'. Go ahead.');continue}
   vcSt('Listening…');const t=await listen();if(!vcOn)break;if(vcHi||!t)continue;
   vcSt('Thinking…');try{const a=await vcTurn(t);if(!vcOn)break;vcSt('Speaking…');await say(vcClean(a))}catch(e){toast(String(e.message||e).slice(0,120));vcEnd()}}}
-function vcStart(){if(!SR||!window.speechSynthesis)return toast('Voice calls need Chrome, Edge or Safari');if(!U||busy)return;if(!K.groq&&!K.gemini)return toast('Add a Groq key in the setup first.');vcOn=true;vcHi=0;vcPick();vcSt('');$('#vc').classList.remove('hide');vcRun()}
-function vcEnd(){vcOn=false;try{rec&&rec.abort()}catch{}speechSynthesis.cancel();$('#vc').classList.add('hide')}
+async function vcStart(){if(!window.speechSynthesis)return toast('This device can’t speak replies, so voice calls won’t work here');if(!REC&&!SR)return toast('Voice calls aren’t supported on this device');if(!U||busy)return;if(!K.groq&&!K.gemini)return toast('Add a Groq key in the setup first.');
+ try{speechSynthesis.speak(new SpeechSynthesisUtterance(''))}catch{}
+ if(REC&&!await micOn()&&!SR)return toast('Allow the microphone for this app to use voice calls');
+ vcOn=true;vcHi=0;vcPick();vcSt('');$('#vc').classList.remove('hide');vcRun()}
+function vcEnd(){vcOn=false;try{rec&&rec.abort()}catch{}micOff();speechSynthesis.cancel();$('#vc').classList.add('hide')}
 $('#cl').onclick=vcStart;$('#ve').onclick=vcEnd;
 $('#vl').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;vo=VO.find(v=>v.n===b.dataset.v);K.vo=vo.n;L.setItem('groq.keys',JSON.stringify(K));vcPick();vcHi=1;speechSynthesis.cancel();try{rec&&rec.abort()}catch{}};
 // + menu: camera, photos, files
