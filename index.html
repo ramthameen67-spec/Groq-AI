@@ -175,7 +175,7 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 <label>Groq API key (<a href="https://console.groq.com/keys" target="_blank" rel="noopener">get one</a>)</label><input id="kg" type="password" autocomplete="off" placeholder="gsk_…">
 <label>Groq API key 2 (<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">get one</a>)</label><input id="kj" type="password" autocomplete="off" placeholder="AIza…">
 <label>Google Client ID (enables Google sign-in)</label><input id="ci" placeholder="123…apps.googleusercontent.com">
-<p class="mu">Version 7. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
+<p class="mu">Version 8. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
 <button class="btn" id="sv">Save</button><button class="btn o" id="sx">Close</button></div></div>
 <div id="sb" class="hide"></div>
 <div id="ms" class="hide"><b class="gt">Choose model</b><div id="mr"></div><button class="btn" id="sd">Done</button></div>
@@ -199,7 +199,7 @@ const UI={
 chat:{ph:'Ask Groq anything…',hi:'What shall we explore?',ch:["Explain black holes like I'm 12",'Write a short sci-fi story','/image a neon galaxy cat']},
 code:{ph:'Describe what to build…',hi:'What shall we build?',ch:['A neon to-do app','A responsive landing page','A Python script that renames files']},
 games:{ph:'Describe a game…',hi:'What shall we play?',ch:['Build Snake with touch controls','Build a Flappy Bird clone','Build a memory match game','Build a space shooter']}};
-const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3200)};
+const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),Math.max(3200,String(t).length*70))};
 const G='https://generativelanguage.googleapis.com/v1beta/models/';
 
 const ARG='gemini-4-argon';let argNo=0;const VIS='meta-llama/llama-4-scout-17b-16e-instruct';
@@ -338,7 +338,7 @@ async function vcTurn(t){const c=chats.find(x=>x.id===cur)||newChat();c.m.push({
 let vo=VO.find(v=>v.n===K.vo)||VO[0],vcOn=false,vcHi=0,vcTok=0,vcBusy=false,rec=null,tapGo=null,mic=null,ac=null,an=null,micErr='',vcDbg={};
 const HAL=/^\W*(thank you|thanks for watching|you|bye)\W*$/i;
 const vcSt=t=>{$('#vs').textContent=t},vcCap=t=>{const e=$('#vt');if(e)e.textContent=t},vcInfo=()=>{const e=$('#vi');if(e)e.textContent=Object.entries(vcDbg).map(([k,v])=>k+': '+v).join(' · ')};
-function vcUi(){if($('#vt'))return;const v=$('#vc'),c=document.createElement('p'),i=document.createElement('p');c.className=i.className='mu';c.id='vt';c.style.cssText='max-width:90%;max-height:22vh;overflow-y:auto;font-size:14px';i.id='vi';i.style.cssText='font-size:11px;opacity:.7';v.insertBefore(c,$('#vl'));v.insertBefore(i,$('#vl'))}
+function vcUi(){if($('#vt'))return;const v=$('#vc'),c=document.createElement('p'),i=document.createElement('p');c.className=i.className='mu';c.id='vt';c.style.cssText='max-width:90%;max-height:22vh;overflow-y:auto;font-size:14px';i.id='vi';i.style.cssText='font-size:11px;opacity:.9;max-width:92%;word-break:break-word';v.insertBefore(c,$('#vl'));v.insertBefore(i,$('#vl'))}
 const micMsg=()=>micErr==='insecure'?'Voice calls need the site to load over https://':micErr==='Timeout'?'The microphone request got no answer. Turn on Microphone Access in the app settings, rebuild the app and allow it in your phone’s settings':/NotAllowed|Security/.test(micErr)?'Microphone is blocked. Turn on Microphone Access in the app settings and allow it in your phone’s settings':micErr==='NotFoundError'?'No microphone found on this device':'Microphone isn’t available here. In the app, turn on Microphone Access in the app settings';
 const gum=c=>new Promise((ok,no)=>{let d=0;const t=setTimeout(()=>{d=1;no({name:'Timeout'})},20000);navigator.mediaDevices.getUserMedia(c).then(m=>{clearTimeout(t);d?m.getTracks().forEach(x=>x.stop()):ok(m)},e=>{clearTimeout(t);d||no(e)})});
 async function micOn(){
@@ -358,64 +358,90 @@ function sayDev(t){return new Promise(ok=>{
   ps.forEach((x,k)=>{const u=new SpeechSynthesisUtterance(x);if(v){u.voice=v;u.lang=v.lang}u.pitch=vo.p;u.rate=vo.r;if(k===0)u.onstart=()=>{go=1;clearTimeout(ws)};if(k===ps.length-1)u.onend=u.onerror=fin;S.speak(u)});
   ws=setTimeout(()=>{if(!go){vcDbg.voice='silent (showing text)';vcInfo();try{S.cancel()}catch{}fin()}},4500)},80)})}
 // real AI voices: Gemini speech first, Groq speech as backup, phone voice last
-const tVO={Jett:['Puck','troy'],Rex:['Fenrir','austin'],Cover:['Charon','daniel'],Atlas:['Orus','austin'],Charen:['Algenib','daniel']},tGM=['gemini-2.5-flash-preview-tts','gemini-2.5-flash-tts','gemini-2.5-pro-preview-tts'],tBad={},tWarn={};
-let tAU=null,tStop=null,tOK=null,sayTok=0;
+const tVO={Jett:['Puck','troy'],Rex:['Fenrir','austin'],Cover:['Charon','daniel'],Atlas:['Orus','austin'],Charen:['Algenib','daniel']},tGM=['gemini-3.8-flash-tts','gemini-3.1-flash-tts-preview','gemini-3.8-flash-lite-tts','gemini-2.5-pro-preview-tts','gemini-2.5-flash-preview-tts'],tBad={},tWarn={};
+let tAU=null,tStop=null,tOK=null,tSh=0,tPref=0,sayTok=0;
 function tWav(u,r){const n=u.length,o=new Uint8Array(44+n),d=new DataView(o.buffer),w=(p,s)=>{for(let i=0;i<s.length;i++)o[p+i]=s.charCodeAt(i)};
  w(0,'RIFF');d.setUint32(4,36+n,true);w(8,'WAVE');w(12,'fmt ');d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,1,true);d.setUint32(24,r,true);d.setUint32(28,r*2,true);d.setUint16(32,2,true);d.setUint16(34,16,true);w(36,'data');d.setUint32(40,n,true);o.set(u,44);
  return new Blob([o],{type:'audio/wav'})}
+function tAudio(d,mime){const s=atob(d),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);
+ if(u.length>44&&s.slice(0,4)==='RIFF')return new Blob([u],{type:'audio/wav'});
+ return tWav(u,+((/rate=(\d+)/.exec(mime||''))||[0,24000])[1])}
 function tUnlock(){try{const a=tAU||(tAU=new Audio());a.src=URL.createObjectURL(tWav(new Uint8Array(2400),24000));const p=a.play();p&&p.catch&&p.catch(()=>{})}catch{}}
+function tBlip(){try{if(!ac)return;const s=ac.createBufferSource();s.buffer=ac.createBuffer(1,1,22050);s.connect(ac.destination);s.start(0)}catch{}}
 const stopSay=()=>{sayTok++;try{speechSynthesis.cancel()}catch{}tStop&&tStop()};
-async function tG(t){let er;
- for(const m of tOK?[tOK]:tGM){
-  for(let k=0;k<2;k++){
-   try{
-    const r=await fetch(G+m+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},body:JSON.stringify({contents:[{parts:[{text:t}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:tVO[vo.n][0]}}}}})});
-    const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);
-    const p=(j.candidates?.[0]?.content?.parts||[]).find(x=>x.inlineData);if(!p)throw new Error('Gemini sent no audio');
-    const s=atob(p.inlineData.data),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);
-    tOK=m;return tWav(u,+((/rate=(\d+)/.exec(p.inlineData.mimeType||''))||[0,24000])[1])}
-   catch(e){er=e;if(!/internal|try again|overload|unavailable|\b5\d\d\b/i.test(String(e.message)))break}}
-  if(/api key|quota|exceed|billing|RESOURCE_EXHAUSTED|rate limit/i.test(String(er.message)))break}
- throw er}
+async function tG1(m,t,sh){
+ const vn=tVO[vo.n][0],r=await fetch(G+m+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},body:JSON.stringify({contents:[{role:'user',parts:[{text:t}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:sh?{prebuiltVoiceConfig:{voiceName:vn}}:{voice:vn}}}})});
+ let j={};try{j=await r.json()}catch{}
+ if(!r.ok){const e=new Error(j.error?.message||'HTTP '+r.status);e.st=r.status;throw e}
+ const p=(j.candidates?.[0]?.content?.parts||[]).find(x=>x.inlineData||x.inline_data),d=p&&(p.inlineData||p.inline_data);
+ if(!d||!d.data){const e=new Error('Gemini sent no audio'+(j.candidates?.[0]?.finishReason?' ('+j.candidates[0].finishReason+')':''));e.st=-1;throw e}
+ return tAudio(d.data,d.mimeType||d.mime_type)}
+async function tG(t){let er=null;
+ for(const m of tOK?[tOK]:tGM)
+  for(const sh of[tSh,1-tSh]){
+   let e1=null;
+   for(let k=0;k<2;k++){
+    try{const b=await tG1(m,t,sh);tOK=m;tSh=sh;vcDbg.model=m;return b}
+    catch(e){e1=e;if(e.st===401||/API key not valid|API_KEY_INVALID/i.test(String(e.message)))throw e;if(e.st>=500&&k<1)continue;break}}
+   if(!er||(er.st===404&&e1.st!==404))er=e1;
+   if(e1.st!==400)break}
+ tOK=null;throw er}
 async function tQ(t){
  const r=await fetch('https://api.groq.com/openai/v1/audio/speech',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+K.groq},body:JSON.stringify({model:'canopylabs/orpheus-v1-english',voice:tVO[vo.n][1],input:t,response_format:'wav'})});
- if(!r.ok){let m=r.status;try{m=(await r.json()).error?.message||m}catch{}throw new Error(m)}
+ if(!r.ok){let m='HTTP '+r.status;try{m=(await r.json()).error?.message||m}catch{}const e=new Error(m);e.st=r.status;throw e}
  return new Blob([await r.arrayBuffer()],{type:'audio/wav'})}
-const tEng=()=>[...(K.gemini?[['Gemini',tG,240]]:[]),...(K.groq?[['Groq',tQ,190]]:[])];
+const tEng=()=>[...(K.gemini?[['Gemini',tG,450]]:[]),...(K.groq?[['Groq',tQ,190]]:[])];
 function tSplit(t,mx){const o=[];let c='';
  for(const s of t.match(/[^.!?]+[.!?]*\s*/g)||[t]){let x=s.trim();if(!x)continue;
   if(c&&(c+' '+x).length>mx){o.push(c);c=''}
   while(x.length>mx){let k=x.lastIndexOf(' ',mx);if(k<mx/2)k=mx;o.push(x.slice(0,k).trim());x=x.slice(k).trim()}
   if(x)c=c?c+' '+x:x}
  if(c)o.push(c);return o.length?o:[t]}
-function tPlay(b){return new Promise(ok=>{
- const a=tAU||(tAU=new Audio()),u=URL.createObjectURL(b);let d=0,wd;
- const fin=v=>{if(d)return;d=1;clearTimeout(wd);a.onended=a.onerror=null;tStop=null;try{a.pause()}catch{}try{URL.revokeObjectURL(u)}catch{}ok(v)};
+// route 1: a normal audio element. true = played to the end, false = never started
+function tPlayEl(b){return new Promise(ok=>{
+ const a=tAU||(tAU=new Audio()),u=URL.createObjectURL(b);let d=0,wd,sw;
+ const fin=v=>{if(d)return;d=1;clearTimeout(wd);clearTimeout(sw);a.onended=a.onerror=null;tStop=null;try{a.pause()}catch{}try{URL.revokeObjectURL(u)}catch{}ok(v)};
  tStop=()=>fin(true);a.onended=()=>fin(true);a.onerror=()=>fin(false);wd=setTimeout(()=>fin(true),90000);
- a.muted=false;a.volume=1;a.src=u;const p=a.play();if(p&&p.catch)p.catch(()=>fin(false))})}
+ a.muted=false;a.volume=1;a.src=u;
+ const p=a.play();if(p&&p.catch)p.catch(()=>fin(false));
+ sw=setTimeout(()=>{if(!d&&a.currentTime<.05)fin(false)},2500)})}
+// route 2: Web Audio on the context that was started by the call tap
+async function tPlayCtx(b){
+ const c=ac;if(!c||c.state==='closed')return false;
+ try{if(c.state!=='running')await c.resume()}catch{}
+ if(c.state!=='running')return false;
+ let buf;try{const ab=await b.arrayBuffer();buf=await new Promise((ok,no)=>{const p=c.decodeAudioData(ab,ok,no);p&&p.then&&p.then(ok,no)})}catch{return false}
+ return new Promise(ok=>{let d=0,wd;const s=c.createBufferSource();s.buffer=buf;s.connect(c.destination);
+  const fin=v=>{if(d)return;d=1;clearTimeout(wd);tStop=null;try{s.onended=null;s.stop()}catch{}ok(v)};
+  wd=setTimeout(()=>fin(true),buf.duration*1000+4000);tStop=()=>fin(true);s.onended=()=>fin(true);
+  try{s.start(0)}catch{fin(false)}})}
+async function tPlay(b){
+ const order=tPref?[tPlayCtx,tPlayEl]:[tPlayEl,tPlayCtx];
+ for(const f of order){if(await f(b)){const x=f===tPlayCtx;tPref=x?1:0;vcDbg.play=x?'web audio':'speaker';vcInfo();return true}}
+ vcDbg.play='blocked';vcInfo();return false}
 async function say(t){
  const tk=++sayTok,live=()=>tk===sayTok&&vcOn;if(!t)return;
  let todo=t;
  for(const[n,f,mx]of tEng()){
   if((tBad[n]||0)>Date.now())continue;
-  const cs=tSplit(todo,mx);let i=0,nx=f(cs[0]);nx.catch(()=>{});
+  const cs=tSplit(todo,mx),key=n.toLowerCase();let i=0,nx=f(cs[0]);nx.catch(()=>{});
   try{
    for(;i<cs.length;i++){
     const b=await nx;if(!live())return;
     nx=i+1<cs.length?f(cs[i+1]):null;if(nx)nx.catch(()=>{});
-    vcDbg.voice=n+' voice '+vo.n;vcInfo();
+    vcDbg[key]='ok';vcDbg.voice=n+' '+vo.n;vcInfo();
     if(!await tPlay(b)){const er=new Error('the phone blocked audio playback');er.blk=1;throw er}
     if(!live())return}
    return}
   catch(e){
-   const m=String(e.message||e).slice(0,100);
+   const m=String(e.message||e).replace(/\s+/g,' ').slice(0,110);
    if(!e.blk)tBad[n]=Date.now()+60000;
-   vcDbg.voice=n+' failed: '+m.slice(0,70);vcInfo();
+   vcDbg[key]='failed: '+m;vcInfo();
    if(!tWarn[n]){tWarn[n]=1;toast(n+' voice failed: '+m)}
    todo=cs.slice(i).join(' ');
    if(e.blk)break}}
  if(!live())return;
- vcDbg.voice=(vcDbg.voice?vcDbg.voice+' → ':'')+'phone voice';vcInfo();
+ vcDbg.voice='phone voice (may be silent)';vcInfo();
  await sayDev(todo)}
 function listen(){return new Promise(ok=>{
  if(!vcOn||!mic)return ok('');
@@ -458,7 +484,7 @@ async function vcStart(){
  if(!navigator.mediaDevices||!window.MediaRecorder){micErr=window.isSecureContext===false?'insecure':'unsupported';return toast(micMsg())}
  vcBusy=true;const tk=++vcTok;
  tUnlock();try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch{}
- try{const AC=window.AudioContext||window.webkitAudioContext;if(AC&&(!ac||ac.state==='closed'))ac=new AC();if(ac)Promise.resolve(ac.resume()).catch(()=>{})}catch{}
+ try{const AC=window.AudioContext||window.webkitAudioContext;if(AC&&(!ac||ac.state==='closed'))ac=new AC();if(ac)Promise.resolve(ac.resume()).catch(()=>{});tBlip()}catch{}
  vcUi();vcCap('');vcDbg={mic:'asking…'};vcInfo();vcPick();vcSt('Connecting…');$('#vc').classList.remove('hide');
  const ok=await micOn();vcBusy=false;
  if(tk!==vcTok){micOff();return}
