@@ -159,6 +159,7 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 .chip.on{color:#fff;font-weight:700;background-image:linear-gradient(#6d28d9,#a855f7),var(--mv)!important;box-shadow:0 0 14px #a855f7}
 .ec{border:0;border-radius:999px;padding:12px 30px;background:#ff3d6e;color:#fff;font-weight:600;cursor:pointer;box-shadow:0 0 22px #ff3d6e88}
 .game-file{margin:10px 0;padding:14px;border:1px solid #55417c;border-radius:14px;background:rgba(111,75,170,.12)}.game-file p{font-size:13px;color:#b8b1c9;margin:7px 0 12px}.game-file button{margin:3px 5px 3px 0}
+.vm{position:relative;width:64px;height:64px;border-radius:50%;border:1.5px solid transparent;background:linear-gradient(#050b1e,#050b1e) padding-box,var(--mv) border-box;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}.vm svg{width:28px;height:28px}.vm.on svg{opacity:.55}.vm.on::after{content:'';position:absolute;left:10px;right:10px;top:50%;height:4px;margin-top:-2px;border-radius:4px;background:#ef4444;transform:rotate(-45deg);box-shadow:0 0 0 2px #050b1e}
 </style></head><body>
 
 <div id="auth" class="scr">
@@ -211,7 +212,7 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 <div id="ms" class="hide"><b class="gt">Choose model</b><div id="mr"></div><button class="btn" id="sd">Done</button></div>
 <div id="cb" class="hide"></div>
 <div id="cm" class="pop hide"><button type="button" data-a="pin">📌 Pin</button><button type="button" data-a="ren">✏️ Rename</button><button type="button" data-a="del">🗑️ Delete</button></div>
-<div id="vc" class="scr hide"><p class="mu">Voice call</p><h1 class="gt" id="vn"></h1><div class="orb"></div><p class="mu" id="vs"></p><div class="chips" id="vl"></div><button type="button" class="lgb" id="vgb"></button><p class="mu" id="vgn" style="max-width:90%;font-size:12px"></p><button type="button" class="ec" id="ve">End call</button></div><div id="vgs" class="hide"><h2 class="lgt">Languages</h2><div id="vgl"></div><button type="button" class="lgx" id="vgx">Close</button></div><div id="up" class="hide"><h2 class="lgt">Updates</h2><div id="upl"></div><button type="button" class="lgx" id="upx">Close</button></div>
+<div id="vc" class="scr hide"><p class="mu">Voice call</p><h1 class="gt" id="vn"></h1><div class="orb"></div><p class="mu" id="vs"></p><div class="chips" id="vl"></div><button type="button" class="lgb" id="vgb"></button><p class="mu" id="vgn" style="max-width:90%;font-size:12px"></p><button type="button" class="vm" id="vm" aria-label="Mute" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><button type="button" class="ec" id="ve">End call</button></div><div id="vgs" class="hide"><h2 class="lgt">Languages</h2><div id="vgl"></div><button type="button" class="lgx" id="vgx">Close</button></div><div id="up" class="hide"><h2 class="lgt">Updates</h2><div id="upl"></div><button type="button" class="lgx" id="upx">Close</button></div>
 <div id="toast"></div>
 
 <script>
@@ -257,9 +258,11 @@ async function gm(m,s,ax=[],fast=0,sg=null){
  return(used!==pk?'ℹ️ '+(pk===ARG?'Groq 4 Argon has no free tier (it needs a paid plan), so ':lb(pk)+' is not available on your key right now, so ')+lb(used)+' answered'+(pk===ARG?' for free.':'.')+'\n\n':'')+(c.content?.parts||[]).map(p=>p.text||'').join('')+(g.length?'\n\n🔎 Sources: '+g.map(x=>'['+(x.title||'link')+']('+x.uri+')').join(' · '):'')}
 async function ask(m,s,ax=[],nb=0){
  const d=new Date(),z=Intl.DateTimeFormat().resolvedOptions().timeZone,q=-d.getTimezoneOffset(),of=(q<0?'-':'+')+String(Math.floor(Math.abs(q)/60)).padStart(2,'0')+':'+String(Math.abs(q)%60).padStart(2,'0');
- const ctx='REAL CLOCK, read from the user\'s device just now: '+d.toLocaleString('en-US',{dateStyle:'full',timeStyle:'long'})+', time zone '+z+' (UTC'+of+'). UTC now: '+d.toISOString().slice(0,19).replace('T',' ')+'. This is the true current time. When asked for the time or date, answer directly from it, converting to other places or time zones if asked. Never say you lack a clock, never tell the user to check another device, and do not web-search for the time. Ignore any earlier messages in this chat that claimed otherwise.';
- s+='\n\n'+ctx+(K.ws!==false?' You can search the web for news, scores, prices, weather and other recent facts.':'');
- m=m.map((x,i)=>x.r==='assistant'&&/clock|real-?time/i.test(x.t)&&/(don.?t|can.?t|cannot|not) (have|know|access|give|tell)/i.test(x.t)?{...x,t:'(earlier reply omitted)'}:i===m.length-1&&x.r==='user'?{...x,t:'['+ctx+']\n\n'+x.t}:x);
+ const ctx='REAL CLOCK, read from the user\'s device just now: '+d.toLocaleString('en-US',{dateStyle:'full',timeStyle:'long'})+', time zone '+z+' (UTC'+of+'). UTC now: '+d.toISOString().slice(0,19).replace('T',' ')+'. This is the true current time. ONLY when the user clearly asks for the time or date, answer directly from it, converting to other places or time zones if asked. Never say you lack a clock, never tell the user to check another device, and do not web-search for the time. Ignore any earlier messages in this chat that claimed otherwise. If the user did not ask about the time or date, never mention the time, the date or the clock, even for short, odd or slang messages or numbers like 67.';
+ const TQ=x=>/\b(what(?:'?s|\s+is|\s+was)?\s+(?:the\s+)?(?:current\s+)?(?:time|date)\b|what(?:'?s|\s+is)\s+(?:the\s+)?(?:day|month|year)\s*(?:today|now)?\b|what\s+(?:day|month|year)\s+(?:is\s+it|is\s+today|are\s+we)|(?:current|today'?s?)\s+(?:time|date|day)\b|time\s+is\s+it|time\s+(?:right\s+)?now\b|date\s+(?:today|now)\b|(?:tell|give)\s+me\s+the\s+(?:time|date|day)\b|(?:the\s+)?time\s+in\s+\w+|time\s*zone|o'?clock|\bclock\b|day\s+of\s+the\s+week|how\s+many\s+(?:days|hours|minutes|weeks|months)\s+(?:until|till|left|since|before)|how\s+long\s+(?:until|till|since)|days?\s+(?:until|till|left)\b)/i.test(x||'');
+ const us=m.filter(x=>x.r==='user').map(x=>x.t.replace(/^\[REAL CLOCK[\s\S]*?\]\n\n/,'')),lu=us[us.length-1]||'',tq=TQ(lu)||(TQ(us[us.length-2])&&lu.length<40&&/^\s*(and|what about|how about|in|then)\b/i.test(lu));
+ s+='\n\n'+(tq?ctx:'Do not mention the current time or date unless the user asks for it.')+(K.ws!==false?' You can search the web for news, scores, prices, weather and other recent facts.':'');
+ m=m.map((x,i)=>x.r==='assistant'&&/clock|real-?time/i.test(x.t)&&/(don.?t|can.?t|cannot|not) (have|know|access|give|tell)/i.test(x.t)?{...x,t:'(earlier reply omitted)'}:i===m.length-1&&x.r==='user'&&tq?{...x,t:'['+ctx+']\n\n'+x.t}:x);
  let o=K.prov==='gemini'?['gemini','groq']:K.prov==='groq'?['groq','gemini']:K.groq?['groq','gemini']:['gemini','groq'];
  if(ax.length&&K.prov!=='groq'&&K.prov!=='gemini')o=['gemini','groq'];
  let er,fb=0,slow=0;const ac=new AbortController(),tm=setTimeout(()=>{slow=1;ac.abort()},23000);for(const p of o){if(!K[p])continue;try{const a=await(p==='groq'?gq:gm)(m,s,ax,0,ac.signal);clearTimeout(tm);return fb?'⚠️ '+(/quota|billing|exceed|free tier|permission/i.test(String(er.message||er))?'Your chosen model needs a paid plan or hit its limit':'Your chosen model failed ('+String(er.message||er).slice(0,90)+')')+', so a backup model answered.\n\n'+a:a}catch(e){if(slow)break;er=e;fb=1;setSt('Trying a backup model…')}}
@@ -293,7 +296,7 @@ function mdGame(t){
 
 const key=()=>'groq.chats.'+U.id;
 const save=()=>{try{L.setItem(key(),JSON.stringify(chats))}catch{toast('Storage is full. Delete old chats.')}};
-const codeLines=t=>{let n=0;String(t||'').replace(/```\w*\n?([\s\S]*?)```/g,(_,c)=>{c=c.replace(/^\n+|\s+$/g,'');if(c)n+=c.split('\n').length;return ''});return n};
+const codeLines=t=>{let n=0;String(t||'').replace(/```\w*\n?([\s\S]*?)(?:```|$)/g,(_,c)=>{c=c.replace(/^\n+|\s+$/g,'');if(c)n+=c.split('\n').length;return ''});return n};
 const wroteTxt=t=>{const n=codeLines(t);return n?'Wrote '+n+(n===1?' Line':' Lines'):''};
 const autoSave=()=>{if(U)save()};addEventListener('pagehide',autoSave);document.addEventListener('visibilitychange',()=>{if(document.hidden)autoSave()});
 const newChat=()=>{const c={id:Date.now().toString(36),tab,title:'New chat',m:[]};chats.unshift(c);cur=c.id;return c};
@@ -414,6 +417,7 @@ function openSt(){for(const i in F)$('#'+i).value=K[F[i]]||'';$('#st').classList
 $('#gr').onclick=$('#gs').onclick=openSt;
 // updates bell: newest first. Add a new entry on top for each release.
 const UPD=[
+{v:21,d:'11 Nov 2026',t:'Mute button and less time talk',l:['Voice calls have a mic button: tap it to mute yourself (a red line shows across it) and tap again to unmute','Groq only says the time or date when you ask about it','Wrote N Lines also counts code that got cut off']},
 {v:20,d:'11 Nov 2026',t:'Lines of code and auto save',l:['Replies that contain code now say "Wrote N Lines" next to the thinking time','Your chat is saved 3 seconds after you send a message, and again whenever you leave the app']},
 {v:19,d:'11 Nov 2026',t:'Downloadable games without code dumps',l:['Game replies now hide the raw HTML source from the chat','Each generated game has a Play game button and a Download game button','Download saves a standalone .html file you can open in a browser']},
 {v:18,d:'11 Nov 2026',t:'Full chat backup and restore',l:['Back up every saved conversation from the side drawer into one portable JSON file','Restore a backup later and merge its conversations with the chats already on this device','Import checks the backup format before changing anything, and skips duplicate chat IDs','Your backup stays in your control: it is downloaded locally and is not uploaded to Groq']},
@@ -484,7 +488,7 @@ async function vcTurn(t){const c=chats.find(x=>x.id===cur)||newChat();c.m.push({
  lastSw=0;const t1=Date.now(),a=await ask(h,SYS.chat+' You are on a live voice call, speaking with the male voice named '+vo.n+'.'+lgPrompt()+' Reply as spoken words: warm and natural, one to three short sentences, no markdown, lists, emojis or code.',[],1);
  c.m.push({r:'assistant',t:a,th:Math.max(1,Math.round((Date.now()-t1)/1000)),sw:lastSw?1:undefined});save();render();list();autoName(c);return a}
 // voice calls, rewritten for WebView apps (Appilix): tap the orb to send if auto-detect can't hear you
-let vo=VO.find(v=>v.n===K.vo)||VO[0],vcOn=false,vcHi=0,vcTok=0,vcBusy=false,rec=null,tapGo=null,mic=null,ac=null,an=null,micErr='',vcDbg={};
+let vo=VO.find(v=>v.n===K.vo)||VO[0],vcOn=false,vcMute=false,vcHi=0,vcTok=0,vcBusy=false,rec=null,tapGo=null,mic=null,ac=null,an=null,micErr='',vcDbg={};
 const HAL=/^\W*(thank you|thanks for watching|you|bye)\W*$/i;
 const vcSt=t=>{$('#vs').textContent=t},vcCap=t=>{const e=$('#vt');if(e)e.textContent=t},vcInfo=()=>{const e=$('#vi');if(e)e.textContent=Object.entries(vcDbg).map(([k,v])=>k+': '+v).join(' · ')};
 function vcUi(){if($('#vt'))return;const v=$('#vc'),c=document.createElement('p'),i=document.createElement('p');c.className=i.className='mu';c.id='vt';c.style.cssText='max-width:90%;max-height:22vh;overflow-y:auto;font-size:14px';i.id='vi';i.style.cssText='font-size:11px;opacity:.9;max-width:92%;word-break:break-word';v.insertBefore(c,$('#vl'));v.insertBefore(i,$('#vl'))}
@@ -599,18 +603,19 @@ function listen(){return new Promise(ok=>{
  let mr;try{mr=new MediaRecorder(mic,mt?{mimeType:mt}:undefined)}catch(e){toast('Recording isn’t supported here');vcEnd();return ok('')}
  let st=0,last=0,nf=.01,iv,done=0,drop=0,tap=0,am=auto();const t0=Date.now();
  const fin=()=>{if(done)return;done=1;clearInterval(iv);tapGo=null;try{if(mr.state!=='inactive')mr.stop();else ok('')}catch{ok('')}};
- const msg=()=>vcSt(am?'Listening…':'Speak, then tap the orb to send');
+ const msg=()=>vcSt(vcMute?'Muted':am?'Listening…':'Speak, then tap the orb to send');
  mr.ondataavailable=e=>{e.data&&e.data.size&&ch.push(e.data)};
  mr.onerror=()=>{drop=1;fin();ok('')};
  mr.onstop=async()=>{clearInterval(iv);if(o)o.style.boxShadow='';const b=new Blob(ch,{type:mr.mimeType||mt||'audio/webm'});
   if(drop||!vcOn||!(tap||(st&&last-st>=350))||b.size<1200)return ok('');
   vcSt('Thinking…');try{ok(await stt(b))}catch(e){toast(String(e.message||e).slice(0,120));ok('')}};
- rec={abort(){drop=1;fin()}};tapGo=()=>{tap=1;fin()};
+ rec={abort(){drop=1;fin()}};tapGo=()=>{if(vcMute)return;tap=1;fin()};
  try{mr.start()}catch(e){toast('Recording failed to start');vcEnd();return ok('')}
  vcDbg.audio=ac?ac.state:'none';vcInfo();msg();
  iv=setInterval(()=>{if(!vcOn){drop=1;fin();return}
   if(ac&&ac.state==='suspended')try{ac.resume().catch(()=>{})}catch{}
   const n=Date.now(),a=auto();if(a!==am){am=a;msg()}
+  if(vcMute){st=0;last=0;tap=0;if(o)o.style.boxShadow='';if(n-t0>9000)fin();return}
   if(a){const v=lvl(),th=Math.max(.03,nf*3);
    if(o)o.style.boxShadow='0 0 '+Math.round(40+Math.min(v*9,1)*70)+'px #a855f7cc,0 0 '+Math.round(90+Math.min(v*9,1)*110)+'px #ec4899aa';
    if(v>th){if(!st)st=n;last=n}else nf=nf*.95+v*.05;
@@ -640,10 +645,11 @@ async function vcStart(){
  if(!ok){vcEnd();return toast(micMsg())}
  vcDbg={mic:'ok',lang:lgSel().n,audio:ac?ac.state:'none',voices:window.speechSynthesis?speechSynthesis.getVoices().length:'none'};vcInfo();
  vcOn=true;vcHi=0;vcRun()}
-function vcEnd(){vcTok++;vcOn=false;tapGo=null;try{rec&&rec.abort()}catch{}micOff();stopSay();$('#vgs').classList.add('hide');$('#vc').classList.add('hide')}
+function vcEnd(){vcMute=false;{const b=$('#vm');if(b){b.classList.remove('on');b.setAttribute('aria-pressed','false')}}vcTok++;vcOn=false;tapGo=null;try{rec&&rec.abort()}catch{}micOff();stopSay();$('#vgs').classList.add('hide');$('#vc').classList.add('hide')}
 vcLg();$('#vgb').onclick=()=>$('#vgs').classList.remove('hide');$('#vgx').onclick=()=>$('#vgs').classList.add('hide');$('#vgl').onclick=e=>{const b=e.target.closest('[data-c]');if(!b)return;K.lg=b.dataset.c;L.setItem('groq.keys',JSON.stringify(K));vcLg();$('#vgs').classList.add('hide');vcDbg.lang=lgSel().n;vcInfo()};$('#cl').onclick=vcStart;$('#ve').onclick=vcEnd;$('#vc .orb').onclick=()=>{tapGo&&tapGo();stopSay()};
 $('#vl').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;vo=VO.find(v=>v.n===b.dataset.v);K.vo=vo.n;L.setItem('groq.keys',JSON.stringify(K));vcPick();vcHi=1;stopSay();try{rec&&rec.abort()}catch{}};
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&vcOn)vcEnd()});
+$('#vm').onclick=()=>{vcMute=!vcMute;try{mic&&mic.getAudioTracks().forEach(t=>t.enabled=!vcMute)}catch{}const b=$('#vm');b.classList.toggle('on',vcMute);b.setAttribute('aria-pressed',String(vcMute));b.setAttribute('aria-label',vcMute?'Unmute':'Mute');if(vcMute)vcSt('Muted');else if($('#vs').textContent==='Muted')vcSt('Listening…')};
 // + menu: camera, photos, files
 const rd=(f,t)=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;t?r.readAsText(f):r.readAsDataURL(f)});
 function strip(){const e=$('#at');e.classList.toggle('hide',!A.length);e.innerHTML=A.map((a,i)=>'<div class="at">'+(a.k==='img'?'<img src="'+a.th+'" alt="">':'<span>'+(a.k==='pdf'?'📕 ':'📄 ')+esc(a.n)+'</span>')+'<b data-x="'+i+'">✕</b></div>').join('')}
