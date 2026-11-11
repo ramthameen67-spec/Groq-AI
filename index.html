@@ -196,7 +196,7 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 </div>
 
 <div id="bk" class="hide"></div>
-<aside id="dr"><button class="btn" id="nc">＋ New chat</button><input class="ds" id="cs" type="search" placeholder="Search saved chats…" autocomplete="off"><div style="display:flex;align-items:center;gap:8px"><p class="mu" style="flex:1">Saved chats</p><button class="btn o" id="ex">Export</button></div><div id="list"></div><div class="me"><div id="av" class="av"></div><b id="un" style="flex:1;min-width:0"></b><button class="btn o" id="so">Sign out</button></div></aside>
+<aside id="dr"><button class="btn" id="nc">＋ New chat</button><input class="ds" id="cs" type="search" placeholder="Search saved chats…" autocomplete="off"><div style="display:flex;align-items:center;gap:8px"><p class="mu" style="flex:1">Saved chats</p><button class="btn o" id="ex">Export chat</button></div><div style="display:flex;gap:7px"><button class="btn o" id="backup" style="flex:1">⬇ Backup all</button><button class="btn o" id="restore" style="flex:1">⬆ Restore backup</button></div><input id="backupFile" type="file" accept="application/json,.json" class="hide"><div id="list"></div><div class="me"><div id="av" class="av"></div><b id="un" style="flex:1;min-width:0"></b><button class="btn o" id="so">Sign out</button></div></aside>
 
 <div id="pv" class="scr hide"><div class="bar"><b class="gt">Live preview</b><button class="btn o" id="cp">Copy code</button><button class="btn o" id="px">Close</button></div><iframe id="fr" sandbox="allow-scripts allow-modals allow-forms allow-pointer-lock"></iframe></div>
 
@@ -204,7 +204,7 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 <label>Groq API key (<a href="https://console.groq.com/keys" target="_blank" rel="noopener">get one</a>)</label><input id="kg" type="password" autocomplete="off" placeholder="gsk_…">
 <label>Groq API key 2 (<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">get one</a>)</label><input id="kj" type="password" autocomplete="off" placeholder="AIza…">
 <label>Google Client ID (enables Google sign-in)</label><input id="ci" placeholder="123…apps.googleusercontent.com">
-<p class="mu">Version 17. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
+<p class="mu">Version 18. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
 <button class="btn" id="sv">Save</button><button class="btn o" id="sx">Close</button></div></div>
 <div id="sb" class="hide"></div>
 <div id="ms" class="hide"><b class="gt">Choose model</b><div id="mr"></div><button class="btn" id="sd">Done</button></div>
@@ -356,6 +356,11 @@ $('#ex').onclick=()=>{
  const blob=new Blob([c.title+'\n\n'+body],{type:'text/plain;charset=utf-8'}),u=URL.createObjectURL(blob),a=document.createElement('a');
  a.href=u;a.download=(c.title||'groq-chat').replace(/[^a-z0-9-_ ]/gi,'').trim().replace(/\s+/g,'-')+'.txt';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);toast('Chat exported');
 };
+// Version 18: portable, local-only backup and safe restore for all chats.
+function downloadBlob(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1500)}
+$('#backup').onclick=()=>{try{const payload={app:'Groq',format:'groq-chat-backup',version:1,exportedAt:new Date().toISOString(),chats};downloadBlob(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),'groq-backup-'+new Date().toISOString().slice(0,10)+'.json');toast('All chats backed up')}catch(e){toast('Backup failed: '+e.message)}};
+$('#restore').onclick=()=>$('#backupFile').click();
+$('#backupFile').onchange=async e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;try{if(f.size>25*1024*1024)throw new Error('Backup is larger than 25 MB.');const data=JSON.parse(await f.text());if(data.format!=='groq-chat-backup'||!Array.isArray(data.chats))throw new Error('That file is not a Groq chat backup.');const valid=data.chats.filter(c=>c&&typeof c.id==='string'&&typeof c.title==='string'&&Array.isArray(c.m)&&c.m.every(m=>m&&['user','assistant'].includes(m.r)&&typeof m.t==='string'));if(!valid.length)throw new Error('No valid conversations were found.');const known=new Set(chats.map(c=>c.id));let added=0;for(const c of valid){if(known.has(c.id))continue;chats.push(c);known.add(c.id);added++}save();list();render();toast(added+' conversation'+(added===1?'':'s')+' restored')}catch(err){toast('Restore failed: '+(err.message||'Invalid backup'))}};
 $('#msgs').addEventListener('click',async e=>{
  const b=e.target.closest('[data-copy]');if(!b)return;
  let t='';try{t=decodeURIComponent(b.dataset.copy||'')}catch{}
@@ -395,6 +400,7 @@ function openSt(){for(const i in F)$('#'+i).value=K[F[i]]||'';$('#st').classList
 $('#gr').onclick=$('#gs').onclick=openSt;
 // updates bell: newest first. Add a new entry on top for each release.
 const UPD=[
+{v:18,d:'11 Nov 2026',t:'Full chat backup and restore',l:['Back up every saved conversation from the side drawer into one portable JSON file','Restore a backup later and merge its conversations with the chats already on this device','Import checks the backup format before changing anything, and skips duplicate chat IDs','Your backup stays in your control: it is downloaded locally and is not uploaded to Groq']},
 {v:17,d:'11 Nov 2026',t:'Chat tools and smoother errors',l:['Copy any message with the new Copy text control under each chat bubble','Search saved chats by title or message text in the side drawer','Export the currently open conversation as a plain .txt file — it stays on your device','API errors now show clearer messages when a service sends an unexpected response']},
 {v:16,d:'11 Nov 2026',t:'Faster Groq',l:['If a reply takes longer than 23 seconds, Groq switches to a faster version and tells you with a 🌟 message','The faster version skips web search to answer quicker']},
 {v:15,d:'11 Nov 2026',t:'Smarter chat names',l:['Chats now get a short name that says what the chat is about, instead of copying the first thing you type','You can still hold a chat and rename it any time']},
