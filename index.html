@@ -293,6 +293,9 @@ function mdGame(t){
 
 const key=()=>'groq.chats.'+U.id;
 const save=()=>{try{L.setItem(key(),JSON.stringify(chats))}catch{toast('Storage is full. Delete old chats.')}};
+const codeLines=t=>{let n=0;String(t||'').replace(/```\w*\n?([\s\S]*?)```/g,(_,c)=>{c=c.replace(/^\n+|\s+$/g,'');if(c)n+=c.split('\n').length;return ''});return n};
+const wroteTxt=t=>{const n=codeLines(t);return n?'Wrote '+n+(n===1?' Line':' Lines'):''};
+const autoSave=()=>{if(U)save()};addEventListener('pagehide',autoSave);document.addEventListener('visibilitychange',()=>{if(document.hidden)autoSave()});
 const newChat=()=>{const c={id:Date.now().toString(36),tab,title:'New chat',m:[]};chats.unshift(c);cur=c.id;return c};
 // chat names: after the first reply, Groq writes a short title that says what the chat is about
 async function ttlAI(u,a){
@@ -317,7 +320,7 @@ async function autoName(c){
 function render(){
  const c=chats.find(x=>x.id===cur),box=$('#msgs'),T=UI[tab];
  if(!c||!c.m.length){box.innerHTML='<div class="empty"><img class="lg" src="'+LOGO+'" width="84" height="84" alt=""><h2 class="gt">'+T.hi+'</h2><div class="chips">'+T.ch.map(x=>'<button class="chip">'+esc(x)+'</button>').join('')+'</div></div>';return}
- box.innerHTML=c.m.map((m,i)=>'<div class="m '+m.r+'">'+(m.r==='user'?esc(m.t).replace(/\n/g,'<br>'):(m.th?'<div class="th">'+thTxt(m.th)+(m.sw?' · searched the web':'')+'</div>':'')+(c.tab==='games'&&m.r==='assistant'?mdGame(m.t):md(m.t)))+(m.img?'<img src="'+m.img+'" alt="">':'')+(m.att||[]).map(a=>a.k==='img'?'<img src="'+a.th+'" alt="">':'<div class="fc">'+(a.k==='pdf'?'📕 ':'📄 ')+esc(a.n)+'</div>').join('')+'<div class="ma"><button type="button" data-copy="'+encodeURIComponent(m.t)+'">Copy text</button></div></div>').join('')+(busy?'<div class="m assistant dots"><i></i><i></i><i></i><span class="tk" id="thk">'+stat+' '+thNow()+'s</span></div>':'');
+ box.innerHTML=c.m.map((m,i)=>'<div class="m '+m.r+'">'+(m.r==='user'?esc(m.t).replace(/\n/g,'<br>'):(m.th||wroteTxt(m.t)?'<div class="th">'+[m.th?thTxt(m.th)+(m.sw?' · searched the web':''):'',wroteTxt(m.t)].filter(Boolean).join(' · ')+'</div>':'')+(c.tab==='games'&&m.r==='assistant'?mdGame(m.t):md(m.t)))+(m.img?'<img src="'+m.img+'" alt="">':'')+(m.att||[]).map(a=>a.k==='img'?'<img src="'+a.th+'" alt="">':'<div class="fc">'+(a.k==='pdf'?'📕 ':'📄 ')+esc(a.n)+'</div>').join('')+'<div class="ma"><button type="button" data-copy="'+encodeURIComponent(m.t)+'">Copy text</button></div></div>').join('')+(busy?'<div class="m assistant dots"><i></i><i></i><i></i><span class="tk" id="thk">'+stat+' '+thNow()+'s</span></div>':'');
  box.scrollTop=box.scrollHeight;
  const l=box.querySelector('.m:last-child');
  if(toTop&&l&&l.classList.contains('assistant'))box.scrollTop+=l.getBoundingClientRect().top-box.getBoundingClientRect().top-8;
@@ -343,7 +346,7 @@ async function send(txt){
  const c=chats.find(x=>x.id===cur)||newChat();
  const isImg=!at.length&&tab==='chat'&&(/^\/(image|imagine)\s+/i.test(txt)||/^(draw|paint|imagine|generate|create|make)\b.{0,30}\b(image|picture|photo|artwork|illustration|wallpaper)\b/i.test(txt));
  c.m.push({r:'user',t:txt,att:at.length?at.map(a=>({n:a.n,k:a.k,th:a.th})):undefined,x:at.filter(a=>a.k==='txt').map(a=>'File: '+a.n+'\n```\n'+a.d+'\n```').join('\n\n')||undefined});
- ntAsk();lastSw=0;setSt(isImg?'Creating first draft…':at.some(a=>a.k==='img')?'Looking at your image…':at.some(a=>a.k==='pdf')?'Reading your PDF…':at.some(a=>a.k==='txt')?'Reading your file…':'Thinking…');busy=true;t0=Date.now();clearInterval(tkI);tkI=setInterval(()=>{const e=$('#thk');if(e)e.textContent=stat+' '+thNow()+'s'},1000);$('#in').value='';$('#in').style.height='auto';render();list();
+ save();setTimeout(autoSave,3000);ntAsk();lastSw=0;setSt(isImg?'Creating first draft…':at.some(a=>a.k==='img')?'Looking at your image…':at.some(a=>a.k==='pdf')?'Reading your PDF…':at.some(a=>a.k==='txt')?'Reading your file…':'Thinking…');busy=true;t0=Date.now();clearInterval(tkI);tkI=setInterval(()=>{const e=$('#thk');if(e)e.textContent=stat+' '+thNow()+'s'},1000);$('#in').value='';$('#in').style.height='auto';render();list();
  try{
   if(isImg){const q=txt.replace(/^\/\w+\s+/,'');const u=await img(q);setSt('Adding finishing touches…');c.m.push({r:'assistant',t:'🎨 '+q,img:await shrink(u)})}
   else{
@@ -411,6 +414,7 @@ function openSt(){for(const i in F)$('#'+i).value=K[F[i]]||'';$('#st').classList
 $('#gr').onclick=$('#gs').onclick=openSt;
 // updates bell: newest first. Add a new entry on top for each release.
 const UPD=[
+{v:20,d:'11 Nov 2026',t:'Lines of code and auto save',l:['Replies that contain code now say "Wrote N Lines" next to the thinking time','Your chat is saved 3 seconds after you send a message, and again whenever you leave the app']},
 {v:19,d:'11 Nov 2026',t:'Downloadable games without code dumps',l:['Game replies now hide the raw HTML source from the chat','Each generated game has a Play game button and a Download game button','Download saves a standalone .html file you can open in a browser']},
 {v:18,d:'11 Nov 2026',t:'Full chat backup and restore',l:['Back up every saved conversation from the side drawer into one portable JSON file','Restore a backup later and merge its conversations with the chats already on this device','Import checks the backup format before changing anything, and skips duplicate chat IDs','Your backup stays in your control: it is downloaded locally and is not uploaded to Groq']},
 {v:17,d:'11 Nov 2026',t:'Chat tools and smoother errors',l:['Copy any message with the new Copy text control under each chat bubble','Search saved chats by title or message text in the side drawer','Export the currently open conversation as a plain .txt file — it stays on your device','API errors now show clearer messages when a service sends an unexpected response']},
