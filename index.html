@@ -232,33 +232,35 @@ const G='https://generativelanguage.googleapis.com/v1beta/models/';
 
 const ARG='gemini-4-argon';let argNo=0;const VIS='meta-llama/llama-4-scout-17b-16e-instruct';
 const MD=[['mg','Groq model',['openai/gpt-oss-120b','openai/gpt-oss-20b','groq/compound','groq/compound-mini','llama-3.3-70b-versatile','llama-3.1-8b-instant']],['mj','Groq model 2',['gemini-flash-latest','gemini-flash-lite-latest','gemini-pro-latest','gemini-3.8-flash','gemini-3.1-flash-lite','gemini-3-flash-preview','gemini-3.1-pro-preview','gemini-4-argon']],['mi','Image model',['gemini-2.5-flash-image','gemini-3-pro-image-preview','pollinations']]];
-async function gq(m,s,ax=[]){
+async function gq(m,s,ax=[],fast=0,sg=null){
  if(ax.some(a=>a.k==='pdf'))throw new Error('This Groq model cannot read PDFs. Pick a Groq Flash model for this one.');
- const v=ax.filter(a=>a.k==='img'),n=m.length-1,mo=v.length?VIS:(K.mg||MD[0][2][0]);
- const go=async t=>{const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+K.groq},body:JSON.stringify({model:mo,messages:[{role:'system',content:s},...m.map((x,i)=>({role:x.r,content:i===n&&v.length?[{type:'text',text:x.t},...v.map(a=>({type:'image_url',image_url:{url:a.d}}))]:x.t}))],temperature:.7,...(t?{tools:[{type:'browser_search'}]}:{})})});
+ const v=ax.filter(a=>a.k==='img'),n=m.length-1,mo=v.length?VIS:(fast?'llama-3.1-8b-instant':(K.mg||MD[0][2][0]));
+ const go=async t=>{const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+K.groq},signal:sg,body:JSON.stringify({model:mo,messages:[{role:'system',content:s},...m.map((x,i)=>({role:x.r,content:i===n&&v.length?[{type:'text',text:x.t},...v.map(a=>({type:'image_url',image_url:{url:a.d}}))]:x.t}))],temperature:.7,...(t?{tools:[{type:'browser_search'}]}:{})})});
   const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);const g=j.choices[0].message;if(t&&(g.executed_tools||[]).length)lastSw=1;return g.content||''};
  const t=K.ws!==false&&!v.length&&/^openai\/gpt-oss/.test(mo);
  const sw=t&&needsWeb(m);if(sw)setSt('Searching the web…');
- try{return await go(t)}catch(e){if(!t)throw e;if(sw)setSt('Retrying without web search…');return go(0)}}
-async function gm(m,s,ax=[]){
+ try{return await go(t)}catch(e){if(!t||(sg&&sg.aborted))throw e;if(sw)setSt('Retrying without web search…');return go(0)}}
+async function gm(m,s,ax=[],fast=0,sg=null){
  const n=m.length-1;
- const go=async(t,mo)=>{const r=await fetch(G+mo+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},body:JSON.stringify({systemInstruction:{parts:[{text:s}]},contents:m.map((x,i)=>({role:x.r==='user'?'user':'model',parts:[{text:x.t},...(i===n?ax.map(a=>({inlineData:{mimeType:a.mime,data:a.d.split(',')[1]}})):[])]})),...(t?{tools:[{google_search:{}}]}:{})})});
+ const go=async(t,mo)=>{const r=await fetch(G+mo+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},signal:sg,body:JSON.stringify({systemInstruction:{parts:[{text:s}]},contents:m.map((x,i)=>({role:x.r==='user'?'user':'model',parts:[{text:x.t},...(i===n?ax.map(a=>({inlineData:{mimeType:a.mime,data:a.d.split(',')[1]}})):[])]})),...(t?{tools:[{google_search:{}}]}:{})})});
   const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);return j};
- const pk=K.mj||MD[1][2][0],t=K.ws!==false;let j,used=pk,e0;const sw=t&&needsWeb(m);if(sw)setSt('Searching the web…');
- for(const mo of [pk,...['gemini-3.8-flash','gemini-3.1-flash-lite'].filter(x=>x!==pk)]){
-  if(mo===ARG&&argNo)continue;try{try{j=await go(t,mo)}catch(e){if(!t)throw e;if(sw)setSt('Retrying without web search…');j=await go(0,mo)}used=mo;break}
-  catch(e){e0=e0||e;setSt('Trying a backup model…');if(/api key|API_KEY/i.test(String(e.message)))break;if(mo===ARG&&/free|paid|billing|tier|quota|limit|permission|denied|not found|not supported/i.test(String(e.message)))argNo=1}}
+ const pk=fast?'gemini-flash-lite-latest':(K.mj||MD[1][2][0]),t=!fast&&K.ws!==false;let j,used=pk,e0;const sw=t&&needsWeb(m);if(sw)setSt('Searching the web…');
+ for(const mo of [pk,...(fast?['gemini-3.1-flash-lite']:['gemini-3.8-flash','gemini-3.1-flash-lite']).filter(x=>x!==pk)]){
+  if(mo===ARG&&argNo)continue;try{try{j=await go(t,mo)}catch(e){if(!t||(sg&&sg.aborted))throw e;if(sw)setSt('Retrying without web search…');j=await go(0,mo)}used=mo;break}
+  catch(e){if(sg&&sg.aborted)throw e;e0=e0||e;setSt('Trying a backup model…');if(/api key|API_KEY/i.test(String(e.message)))break;if(mo===ARG&&/free|paid|billing|tier|quota|limit|permission|denied|not found|not supported/i.test(String(e.message)))argNo=1}}
  if(!j)throw e0;
  const c=(j.candidates||[])[0];if(!c)throw new Error(j.promptFeedback?.blockReason?'Groq declined this request ('+j.promptFeedback.blockReason+').':'Groq sent back no answer.');const g=[...new Map((c.groundingMetadata?.groundingChunks||[]).filter(x=>x.web).map(x=>[x.web.title||x.web.uri,x.web])).values()].slice(0,4);if(g.length||(c.groundingMetadata?.webSearchQueries||[]).length)lastSw=1;
  return(used!==pk?'ℹ️ '+(pk===ARG?'Groq 4 Argon has no free tier (it needs a paid plan), so ':lb(pk)+' is not available on your key right now, so ')+lb(used)+' answered'+(pk===ARG?' for free.':'.')+'\n\n':'')+(c.content?.parts||[]).map(p=>p.text||'').join('')+(g.length?'\n\n🔎 Sources: '+g.map(x=>'['+(x.title||'link')+']('+x.uri+')').join(' · '):'')}
-async function ask(m,s,ax=[]){
+async function ask(m,s,ax=[],nb=0){
  const d=new Date(),z=Intl.DateTimeFormat().resolvedOptions().timeZone,q=-d.getTimezoneOffset(),of=(q<0?'-':'+')+String(Math.floor(Math.abs(q)/60)).padStart(2,'0')+':'+String(Math.abs(q)%60).padStart(2,'0');
  const ctx='REAL CLOCK, read from the user\'s device just now: '+d.toLocaleString('en-US',{dateStyle:'full',timeStyle:'long'})+', time zone '+z+' (UTC'+of+'). UTC now: '+d.toISOString().slice(0,19).replace('T',' ')+'. This is the true current time. When asked for the time or date, answer directly from it, converting to other places or time zones if asked. Never say you lack a clock, never tell the user to check another device, and do not web-search for the time. Ignore any earlier messages in this chat that claimed otherwise.';
  s+='\n\n'+ctx+(K.ws!==false?' You can search the web for news, scores, prices, weather and other recent facts.':'');
  m=m.map((x,i)=>x.r==='assistant'&&/clock|real-?time/i.test(x.t)&&/(don.?t|can.?t|cannot|not) (have|know|access|give|tell)/i.test(x.t)?{...x,t:'(earlier reply omitted)'}:i===m.length-1&&x.r==='user'?{...x,t:'['+ctx+']\n\n'+x.t}:x);
  let o=K.prov==='gemini'?['gemini','groq']:K.prov==='groq'?['groq','gemini']:K.groq?['groq','gemini']:['gemini','groq'];
  if(ax.length&&K.prov!=='groq'&&K.prov!=='gemini')o=['gemini','groq'];
- let er,fb=0;for(const p of o){if(!K[p])continue;try{const a=await(p==='groq'?gq:gm)(m,s,ax);return fb?'⚠️ '+(/quota|billing|exceed|free tier|permission/i.test(String(er.message||er))?'Your chosen model needs a paid plan or hit its limit':'Your chosen model failed ('+String(er.message||er).slice(0,90)+')')+', so a backup model answered.\n\n'+a:a}catch(e){er=e;fb=1;setSt('Trying a backup model…')}}
+ let er,fb=0,slow=0;const ac=new AbortController(),tm=setTimeout(()=>{slow=1;ac.abort()},23000);for(const p of o){if(!K[p])continue;try{const a=await(p==='groq'?gq:gm)(m,s,ax,0,ac.signal);clearTimeout(tm);return fb?'⚠️ '+(/quota|billing|exceed|free tier|permission/i.test(String(er.message||er))?'Your chosen model needs a paid plan or hit its limit':'Your chosen model failed ('+String(er.message||er).slice(0,90)+')')+', so a backup model answered.\n\n'+a:a}catch(e){if(slow)break;er=e;fb=1;setSt('Trying a backup model…')}}
+ clearTimeout(tm);
+ if(slow){setSt('Switching to a faster Groq…');for(const p of o){if(!K[p])continue;try{const a=await(p==='groq'?gq:gm)(m,s,ax,1);return(nb?'':'🌟Switched To Faster Groq\nVersion🌟\n\n')+a}catch(e){er=e}}}
  throw er||new Error('Add a Groq key in the setup first.')}
 async function img(p){setSt('Creating first draft…');
  if(K.gemini&&K.mi!=='pollinations')try{
@@ -278,6 +280,26 @@ function md(t){const b=[];
 const key=()=>'groq.chats.'+U.id;
 const save=()=>{try{L.setItem(key(),JSON.stringify(chats))}catch{toast('Storage is full. Delete old chats.')}};
 const newChat=()=>{const c={id:Date.now().toString(36),tab,title:'New chat',m:[]};chats.unshift(c);cur=c.id;return c};
+// chat names: after the first reply, Groq writes a short title that says what the chat is about
+async function ttlAI(u,a){
+ const sy='You name chats. Reply with ONLY a short title of 2 to 5 words that describes what the chat is about. Do not copy the user\'s message word for word. No quotes, no emoji, no full stop. Use the same language the user wrote in.';
+ const q='User said: '+u.slice(0,500)+'\n\nAssistant replied: '+a.slice(0,500)+'\n\nChat title:';
+ const o=K.prov==='gemini'?['gemini','groq']:['groq','gemini'];let er;
+ for(const p of o){if(!K[p])continue;try{
+  let t='';
+  if(p==='groq'){const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+K.groq},body:JSON.stringify({model:'llama-3.1-8b-instant',messages:[{role:'system',content:sy},{role:'user',content:q}],temperature:.3,max_tokens:24})});const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);t=j.choices[0].message.content||''}
+  else{const r=await fetch(G+'gemini-flash-lite-latest:generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},body:JSON.stringify({systemInstruction:{parts:[{text:sy}]},contents:[{role:'user',parts:[{text:q}]}]})});const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);t=((j.candidates||[])[0]?.content?.parts||[]).map(x=>x.text||'').join('')}
+  t=t.replace(/^[\s\S]*?title\s*:/i,'').split('\n').filter(x=>x.trim())[0]||'';
+  t=t.replace(/^[\s"'“”*#-]+|[\s"'“”*.]+$/g,'').slice(0,40).trim();
+  if(t)return t}catch(e){er=e}}
+ throw er||new Error('no title')}
+async function autoName(c){
+ if(!c||c.title!=='New chat'||c.tg)return;
+ const u=c.m.find(x=>x.r==='user'),a=c.m.find(x=>x.r==='assistant'&&!x.t.startsWith('⚠️'));
+ if(!u||!a)return;c.tg=1;
+ let t='';try{t=await ttlAI(u.t.replace(/^\/\w+\s+/,''),a.t.replace(/^ℹ️[^\n]*\n\n/,''))}catch{}
+ if(!t)t=u.t.replace(/^\/\w+\s+/,'').slice(0,34);
+ if(c.title==='New chat')c.title=t;save();list()}
 function render(){
  const c=chats.find(x=>x.id===cur),box=$('#msgs'),T=UI[tab];
  if(!c||!c.m.length){box.innerHTML='<div class="empty"><img class="lg" src="'+LOGO+'" width="84" height="84" alt=""><h2 class="gt">'+T.hi+'</h2><div class="chips">'+T.ch.map(x=>'<button class="chip">'+esc(x)+'</button>').join('')+'</div></div>';return}
@@ -306,18 +328,18 @@ async function send(txt){
  const at=A;A=[];strip();txt=txt||(at.some(a=>a.k==='img')?'Describe this image.':'Summarize this.');
  const c=chats.find(x=>x.id===cur)||newChat();
  const isImg=!at.length&&tab==='chat'&&(/^\/(image|imagine)\s+/i.test(txt)||/^(draw|paint|imagine|generate|create|make)\b.{0,30}\b(image|picture|photo|artwork|illustration|wallpaper)\b/i.test(txt));
- c.m.push({r:'user',t:txt,att:at.length?at.map(a=>({n:a.n,k:a.k,th:a.th})):undefined,x:at.filter(a=>a.k==='txt').map(a=>'File: '+a.n+'\n```\n'+a.d+'\n```').join('\n\n')||undefined});if(c.title==='New chat')c.title=txt.replace(/^\/\w+\s+/,'').slice(0,34);
+ c.m.push({r:'user',t:txt,att:at.length?at.map(a=>({n:a.n,k:a.k,th:a.th})):undefined,x:at.filter(a=>a.k==='txt').map(a=>'File: '+a.n+'\n```\n'+a.d+'\n```').join('\n\n')||undefined});
  ntAsk();lastSw=0;setSt(isImg?'Creating first draft…':at.some(a=>a.k==='img')?'Looking at your image…':at.some(a=>a.k==='pdf')?'Reading your PDF…':at.some(a=>a.k==='txt')?'Reading your file…':'Thinking…');busy=true;t0=Date.now();clearInterval(tkI);tkI=setInterval(()=>{const e=$('#thk');if(e)e.textContent=stat+' '+thNow()+'s'},1000);$('#in').value='';$('#in').style.height='auto';render();list();
  try{
   if(isImg){const q=txt.replace(/^\/\w+\s+/,'');const u=await img(q);setSt('Adding finishing touches…');c.m.push({r:'assistant',t:'🎨 '+q,img:await shrink(u)})}
   else{
-   const h=c.m.filter(x=>!x.img&&!x.t.startsWith('⚠️')&&!/^\/(image|imagine)\s/i.test(x.t)).slice(-20).map(x=>({r:x.r,t:(x.x?x.x+'\n\n':'')+x.t}));
+   const h=c.m.filter(x=>!x.img&&!x.t.startsWith('⚠️')&&!/^\/(image|imagine)\s/i.test(x.t)).slice(-20).map(x=>({r:x.r,t:(x.x?x.x+'\n\n':'')+x.t.replace(/^🌟Switched To Faster Groq\nVersion🌟\n\n/,'')}));
    while(h.length&&h[0].r!=='user')h.shift();
    const a=await ask(h,SYS[tab],at.filter(x=>x.k!=='txt'));c.m.push({r:'assistant',t:a,th:Math.max(1,Math.round((Date.now()-t0)/1000)),sw:lastSw?1:undefined});
    const m=tab!=='chat'&&/```html\s*\n([\s\S]*?)```/i.exec(a);if(m)pv(m[1]);
   }
  }catch(e){c.m.push({r:'assistant',t:'⚠️ '+(e.message||e)+'\n\nCheck your keys in the setup (⚙). If you opened this file in a preview, open it in your browser instead, because previews block outside requests.'})}
- busy=false;clearInterval(tkI);save();toTop=true;render();list();{const z=c.m[c.m.length-1];ntDone(z&&z.r==='assistant'?z.t:'')}}
+ busy=false;clearInterval(tkI);save();toTop=true;render();list();autoName(c);{const z=c.m[c.m.length-1];ntDone(z&&z.r==='assistant'?z.t:'')}}
 
 const pv=c=>{code=c;$('#fr').srcdoc=c;$('#pv').classList.remove('hide')};
 $('#px').onclick=()=>{$('#pv').classList.add('hide');$('#fr').srcdoc=''};
@@ -355,6 +377,8 @@ function openSt(){for(const i in F)$('#'+i).value=K[F[i]]||'';$('#st').classList
 $('#gr').onclick=$('#gs').onclick=openSt;
 // updates bell: newest first. Add a new entry on top for each release.
 const UPD=[
+{v:16,d:'11 Nov 2026',t:'Faster Groq',l:['If a reply takes longer than 23 seconds, Groq switches to a faster version and tells you with a 🌟 message','The faster version skips web search to answer quicker']},
+{v:15,d:'11 Nov 2026',t:'Smarter chat names',l:['Chats now get a short name that says what the chat is about, instead of copying the first thing you type','You can still hold a chat and rename it any time']},
 {v:14,d:'11 Nov 2026',t:'Updates bell',l:['New bell next to the Groq name that shows what changed in each version','A pink number tells you how many updates you have not seen yet']},
 {v:13,d:'11 Nov 2026',t:'Notifications',l:['Get a "Your response is ready!" alert when a reply finishes while the app is hidden (your phone has to allow notifications)']},
 {v:12,d:'11 Nov 2026',t:'Live status',l:['Shows what Groq is doing: creating first draft, searching the web, reading your file or trying a backup model','Replies say when they searched the web']},
@@ -414,10 +438,10 @@ async function stt(b){
  if(g.c&&!g.w&&K.gemini)fs.reverse();
  let er;for(const f of fs){try{return await f()}catch(e){er=e}}
  throw er||new Error('Add a Groq or Gemini key to hear you')}
-async function vcTurn(t){const c=chats.find(x=>x.id===cur)||newChat();c.m.push({r:'user',t});if(c.title==='New chat')c.title=t.slice(0,34);save();render();list();
+async function vcTurn(t){const c=chats.find(x=>x.id===cur)||newChat();c.m.push({r:'user',t});save();render();list();
  const h=c.m.filter(x=>!x.img&&!x.t.startsWith('⚠️')).slice(-12).map(x=>({r:x.r,t:x.t}));while(h.length&&h[0].r!=='user')h.shift();
- lastSw=0;const t1=Date.now(),a=await ask(h,SYS.chat+' You are on a live voice call, speaking with the male voice named '+vo.n+'.'+lgPrompt()+' Reply as spoken words: warm and natural, one to three short sentences, no markdown, lists, emojis or code.');
- c.m.push({r:'assistant',t:a,th:Math.max(1,Math.round((Date.now()-t1)/1000)),sw:lastSw?1:undefined});save();render();list();return a}
+ lastSw=0;const t1=Date.now(),a=await ask(h,SYS.chat+' You are on a live voice call, speaking with the male voice named '+vo.n+'.'+lgPrompt()+' Reply as spoken words: warm and natural, one to three short sentences, no markdown, lists, emojis or code.',[],1);
+ c.m.push({r:'assistant',t:a,th:Math.max(1,Math.round((Date.now()-t1)/1000)),sw:lastSw?1:undefined});save();render();list();autoName(c);return a}
 // voice calls, rewritten for WebView apps (Appilix): tap the orb to send if auto-detect can't hear you
 let vo=VO.find(v=>v.n===K.vo)||VO[0],vcOn=false,vcHi=0,vcTok=0,vcBusy=false,rec=null,tapGo=null,mic=null,ac=null,an=null,micErr='',vcDbg={};
 const HAL=/^\W*(thank you|thanks for watching|you|bye)\W*$/i;
