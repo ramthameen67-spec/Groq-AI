@@ -35,7 +35,7 @@ h1{font-size:46px;line-height:1.1}
 .lk{background:none;border:0;cursor:pointer;text-decoration:underline}
 #app{display:flex;flex-direction:column;height:var(--vh,100dvh);padding-top:env(safe-area-inset-top)}
 header{display:flex;align-items:center;gap:10px;padding:10px 14px 6px}
-header b{flex:1;font-size:20px}
+header b{font-size:20px}
 .ib{background:#ffffff10;border:1px solid var(--ln);border-radius:12px;width:40px;height:40px;cursor:pointer;font-size:18px}
 nav{display:flex;gap:6px;padding:4px 14px 8px}
 nav button{flex:1;padding:9px;border-radius:12px;border:1px solid var(--ln);background:transparent;color:var(--mu);font-weight:600;cursor:pointer}
@@ -117,6 +117,22 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 .lgr.on span{color:#38bdf8}
 .lgx{border:1.5px solid transparent;border-radius:999px;padding:10px 28px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;background:linear-gradient(#050b1e,#050b1e) padding-box,var(--mv) border-box;background-size:auto,200% 100%}
 @media(prefers-reduced-motion:no-preference){.lgb,.lgr.on,.lgx{animation:mvo 3.5s ease-in-out infinite alternate}.lgt{animation:mvf 3.5s ease-in-out infinite alternate}}
+/* updates bell */
+#up{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;gap:12px;padding:calc(22px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));background:radial-gradient(80% 38% at 50% 0,#1d4ed855,transparent),radial-gradient(60% 30% at 100% 100%,#a855f726,transparent),#040a1c}
+#up.hide{display:none}
+#upl{width:100%;max-width:420px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:2px;text-align:left;-webkit-overflow-scrolling:touch}
+.upc{border:1.5px solid #14264f;border-radius:16px;padding:14px 16px;background:#08122b}
+.upc.new{border-color:transparent;background:linear-gradient(#0a1a3d,#0a1a3d) padding-box,var(--mv) border-box;background-size:auto,200% 100%;box-shadow:0 0 14px #a855f777}
+.upc h3{margin:0 0 2px;font-size:16px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.upc h3 i{font-style:normal;font-size:11px;font-weight:700;color:#fff;background:var(--g);border-radius:999px;padding:2px 8px}
+.upc time{font-size:12px;color:var(--mu)}
+.upc ul{margin:8px 0 0;padding-left:18px;font-size:14px;line-height:1.5}
+#bl{position:relative;width:36px;height:36px;font-size:0;display:flex;align-items:center;justify-content:center;margin-right:auto}
+#bl i{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:#ff3d9a;color:#fff;font:700 11px/18px system-ui,sans-serif;text-align:center;font-style:normal;box-shadow:0 0 8px #ff3d9a}
+#bl i.hide{display:none}
+@keyframes rg{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(0)}}
+@media(prefers-reduced-motion:no-preference){#bl.nw svg{transform-origin:50% 8%;animation:rg 2.4s ease-in-out infinite}.upc.new{animation:mvo 3.5s ease-in-out infinite alternate}}
+
 
 @media(prefers-reduced-motion:no-preference){.btn:not(.o),nav button.on{animation:mvf 3.5s ease-in-out infinite alternate}.btn.o,.ib,.mc,.chip,nav button:not(.on){animation:mvo 3.5s ease-in-out infinite alternate}}
 .ci{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
@@ -169,7 +185,7 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 </div>
 
 <div id="app" class="hide">
- <header><button class="ib" id="mn" aria-label="Saved chats">☰</button><img class="lg" width="34" height="34" alt=""><b class="gt">Groq</b><button class="ib" id="gr" aria-label="Setup">⚙</button></header>
+ <header><button class="ib" id="mn" aria-label="Saved chats">☰</button><img class="lg" width="34" height="34" alt=""><b class="gt">Groq</b><button class="ib" id="bl" aria-label="Updates"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="url(#bgd)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><defs><linearGradient id="bgd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38bdf8"/><stop offset=".5" stop-color="#a855f7"/><stop offset="1" stop-color="#ff3d9a"/></linearGradient></defs><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><i class="hide"></i></button><button class="ib" id="gr" aria-label="Setup">⚙</button></header>
  <nav><button data-t="chat" class="on">Chatbot</button><button data-t="code">Code</button><button data-t="games">Games</button></nav>
  <div id="msgs"></div>
  <form id="f"><div class="cb"><div id="at" class="hide"></div><textarea id="in" rows="1" placeholder="Ask Groq anything…"></textarea>
@@ -187,13 +203,13 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 <label>Groq API key (<a href="https://console.groq.com/keys" target="_blank" rel="noopener">get one</a>)</label><input id="kg" type="password" autocomplete="off" placeholder="gsk_…">
 <label>Groq API key 2 (<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">get one</a>)</label><input id="kj" type="password" autocomplete="off" placeholder="AIza…">
 <label>Google Client ID (enables Google sign-in)</label><input id="ci" placeholder="123…apps.googleusercontent.com">
-<p class="mu">Version 12. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
+<p class="mu">Version 14. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
 <button class="btn" id="sv">Save</button><button class="btn o" id="sx">Close</button></div></div>
 <div id="sb" class="hide"></div>
 <div id="ms" class="hide"><b class="gt">Choose model</b><div id="mr"></div><button class="btn" id="sd">Done</button></div>
 <div id="cb" class="hide"></div>
 <div id="cm" class="pop hide"><button type="button" data-a="pin">📌 Pin</button><button type="button" data-a="ren">✏️ Rename</button><button type="button" data-a="del">🗑️ Delete</button></div>
-<div id="vc" class="scr hide"><p class="mu">Voice call</p><h1 class="gt" id="vn"></h1><div class="orb"></div><p class="mu" id="vs"></p><div class="chips" id="vl"></div><button type="button" class="lgb" id="vgb"></button><p class="mu" id="vgn" style="max-width:90%;font-size:12px"></p><button type="button" class="ec" id="ve">End call</button></div><div id="vgs" class="hide"><h2 class="lgt">Languages</h2><div id="vgl"></div><button type="button" class="lgx" id="vgx">Close</button></div>
+<div id="vc" class="scr hide"><p class="mu">Voice call</p><h1 class="gt" id="vn"></h1><div class="orb"></div><p class="mu" id="vs"></p><div class="chips" id="vl"></div><button type="button" class="lgb" id="vgb"></button><p class="mu" id="vgn" style="max-width:90%;font-size:12px"></p><button type="button" class="ec" id="ve">End call</button></div><div id="vgs" class="hide"><h2 class="lgt">Languages</h2><div id="vgl"></div><button type="button" class="lgx" id="vgx">Close</button></div><div id="up" class="hide"><h2 class="lgt">Updates</h2><div id="upl"></div><button type="button" class="lgx" id="upx">Close</button></div>
 <div id="toast"></div>
 
 <script>
@@ -270,6 +286,16 @@ function render(){
  const l=box.querySelector('.m:last-child');
  if(toTop&&l&&l.classList.contains('assistant'))box.scrollTop+=l.getBoundingClientRect().top-box.getBoundingClientRect().top-8;
  toTop=false}
+// notifications: ask once, then tell the user when a reply finishes while the app is hidden
+function ntAsk(){try{if(!('Notification' in window)||Notification.permission!=='default'||K.nq)return;K.nq=1;L.setItem('groq.keys',JSON.stringify(K));const p=Notification.requestPermission();p&&p.catch&&p.catch(()=>{})}catch{}}
+async function ntDone(txt){
+ try{
+  if(!document.hidden||!('Notification' in window)||Notification.permission!=='granted')return;
+  const o={body:String(txt||'').replace(/\s+/g,' ').slice(0,120),icon:LOGO,tag:'groq-ready'},t=/^⚠️/.test(o.body)?'Groq hit a problem':'Your response is ready!';
+  const reg=navigator.serviceWorker&&navigator.serviceWorker.getRegistration?await navigator.serviceWorker.getRegistration():null;
+  if(reg&&reg.showNotification)return await reg.showNotification(t,o);
+  const n=new Notification(t,o);n.onclick=()=>{try{window.focus();n.close()}catch{}}
+ }catch{}}
 let t0=0,tkI=null,stat='Thinking…',lastSw=0;const setSt=t=>{stat=t;const e=$('#thk');if(e)e.textContent=stat+' '+thNow()+'s';try{if(vcOn)vcSt(t)}catch{}};const needsWeb=m=>{const x=((m[m.length-1]||{}).t||'').replace(/^\[REAL CLOCK[\s\S]*?\]\n\n/,'');return /\b(news|latest|today|tonight|yesterday|tomorrow|this (week|month|year)|right now|current(ly)?|price|stock|weather|forecast|scores?|fixtures?|results?|winner|standings|release date|who is|who's|trending|exchange rate|open now|near me|20[2-9]\d)\b/i.test(x)};const thNow=()=>t0?Math.max(0,Math.floor((Date.now()-t0)/1000)):0,thTxt=n=>'Thought for '+n+(n===1?' second':' seconds');
 let rid=null,rdn=null;
 function list(){$('#list').innerHTML=chats.filter(c=>c.tab===tab&&c.m.length).sort((a,b)=>!!b.pin-!!a.pin).map(c=>'<div class="ci'+(c.id===cur?' on':'')+(rid===c.id?' ed':'')+(rdn===c.id?' dn':'')+'" data-id="'+c.id+'">'+(rid===c.id?'<input class="rn" maxlength="60">':'<span>'+(c.pin?'📌 ':'')+esc(c.title)+'</span>')+'</div>').join('')||'<p class="mu">Your chats will be saved here. Hold one for Pin, Rename and Delete.</p>';
@@ -281,7 +307,7 @@ async function send(txt){
  const c=chats.find(x=>x.id===cur)||newChat();
  const isImg=!at.length&&tab==='chat'&&(/^\/(image|imagine)\s+/i.test(txt)||/^(draw|paint|imagine|generate|create|make)\b.{0,30}\b(image|picture|photo|artwork|illustration|wallpaper)\b/i.test(txt));
  c.m.push({r:'user',t:txt,att:at.length?at.map(a=>({n:a.n,k:a.k,th:a.th})):undefined,x:at.filter(a=>a.k==='txt').map(a=>'File: '+a.n+'\n```\n'+a.d+'\n```').join('\n\n')||undefined});if(c.title==='New chat')c.title=txt.replace(/^\/\w+\s+/,'').slice(0,34);
- lastSw=0;setSt(isImg?'Creating first draft…':at.some(a=>a.k==='img')?'Looking at your image…':at.some(a=>a.k==='pdf')?'Reading your PDF…':at.some(a=>a.k==='txt')?'Reading your file…':'Thinking…');busy=true;t0=Date.now();clearInterval(tkI);tkI=setInterval(()=>{const e=$('#thk');if(e)e.textContent=stat+' '+thNow()+'s'},1000);$('#in').value='';$('#in').style.height='auto';render();list();
+ ntAsk();lastSw=0;setSt(isImg?'Creating first draft…':at.some(a=>a.k==='img')?'Looking at your image…':at.some(a=>a.k==='pdf')?'Reading your PDF…':at.some(a=>a.k==='txt')?'Reading your file…':'Thinking…');busy=true;t0=Date.now();clearInterval(tkI);tkI=setInterval(()=>{const e=$('#thk');if(e)e.textContent=stat+' '+thNow()+'s'},1000);$('#in').value='';$('#in').style.height='auto';render();list();
  try{
   if(isImg){const q=txt.replace(/^\/\w+\s+/,'');const u=await img(q);setSt('Adding finishing touches…');c.m.push({r:'assistant',t:'🎨 '+q,img:await shrink(u)})}
   else{
@@ -291,7 +317,7 @@ async function send(txt){
    const m=tab!=='chat'&&/```html\s*\n([\s\S]*?)```/i.exec(a);if(m)pv(m[1]);
   }
  }catch(e){c.m.push({r:'assistant',t:'⚠️ '+(e.message||e)+'\n\nCheck your keys in the setup (⚙). If you opened this file in a preview, open it in your browser instead, because previews block outside requests.'})}
- busy=false;clearInterval(tkI);save();toTop=true;render();list()}
+ busy=false;clearInterval(tkI);save();toTop=true;render();list();{const z=c.m[c.m.length-1];ntDone(z&&z.r==='assistant'?z.t:'')}}
 
 const pv=c=>{code=c;$('#fr').srcdoc=c;$('#pv').classList.remove('hide')};
 $('#px').onclick=()=>{$('#pv').classList.add('hide');$('#fr').srcdoc=''};
@@ -327,6 +353,23 @@ $('#gc').onclick=()=>{toast('Add your Google Client ID in the setup first');open
 const F={kg:'groq',kj:'gemini',ci:'cid'};
 function openSt(){for(const i in F)$('#'+i).value=K[F[i]]||'';$('#st').classList.remove('hide')}
 $('#gr').onclick=$('#gs').onclick=openSt;
+// updates bell: newest first. Add a new entry on top for each release.
+const UPD=[
+{v:14,d:'11 Nov 2026',t:'Updates bell',l:['New bell next to the Groq name that shows what changed in each version','A pink number tells you how many updates you have not seen yet']},
+{v:13,d:'11 Nov 2026',t:'Notifications',l:['Get a "Your response is ready!" alert when a reply finishes while the app is hidden (your phone has to allow notifications)']},
+{v:12,d:'11 Nov 2026',t:'Live status',l:['Shows what Groq is doing: creating first draft, searching the web, reading your file or trying a backup model','Replies say when they searched the web']},
+{v:11,d:'11 Nov 2026',t:'Thinking time',l:['Every reply says "Thought for N seconds", with a live timer while you wait']},
+{v:10,d:'11 Nov 2026',t:'Language picker',l:['New animated blue, pink and purple language list on the call screen']},
+{v:9,d:'11 Nov 2026',t:'Languages in calls',l:['Choose the language you speak so Groq hears you correctly, including Afrikaans, isiZulu and isiXhosa','Replies come back in the language you chose']},
+{v:8,d:'11 Nov 2026',t:'Voice fixes',l:['Newer Gemini speech models, a backup way to play sound, and clearer error text on the call screen']},
+{v:7,d:'10 Nov 2026',t:'Real voices in calls',l:['Voice calls now use real AI voices instead of the phone voice']}];
+const upSeen=()=>{try{const v=L.getItem('groq.seen');return v==null?13:+v}catch{return 13}};
+function upBadge(){const n=UPD.filter(x=>x.v>upSeen()).length,b=$('#bl i');if(!b)return;b.textContent=n>9?'9+':n;b.classList.toggle('hide',!n);$('#bl').classList.toggle('nw',!!n)}
+function upOpen(){const s=upSeen();
+ $('#upl').innerHTML=UPD.map(x=>'<div class="upc'+(x.v>s?' new':'')+'"><h3><span>Version '+x.v+(x.t?' · '+esc(x.t):'')+'</span>'+(x.v>s?'<i>NEW</i>':'')+'</h3><time>'+esc(x.d)+'</time><ul>'+x.l.map(y=>'<li>'+esc(y)+'</li>').join('')+'</ul></div>').join('');
+ $('#up').classList.remove('hide');try{L.setItem('groq.seen',String(UPD[0].v))}catch{}upBadge()}
+$('#bl').onclick=upOpen;$('#upx').onclick=()=>$('#up').classList.add('hide');upBadge();
+
 $('#sx').onclick=()=>$('#st').classList.add('hide');
 $('#sv').onclick=()=>{for(const i in F)K[F[i]]=$('#'+i).value.trim();L.setItem('groq.keys',JSON.stringify(K));$('#st').classList.add('hide');argNo=0;toast('Saved');gInit()};
 
