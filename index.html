@@ -51,7 +51,7 @@ code{font-family:ui-monospace,Menlo,monospace;color:#7dd3fc}
 .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
 .chip{border:1px solid var(--ln);background:#ffffff0d;border-radius:999px;padding:8px 14px;cursor:pointer;font-size:13px}
 .dots i{display:inline-block;width:8px;height:8px;margin:0 2px;border-radius:50%;background:var(--p);animation:bl 1s infinite}
-.dots i:nth-child(2){background:var(--v);animation-delay:.15s}.dots i:nth-child(3){background:var(--b);animation-delay:.3s}
+.dots i:nth-child(2){background:var(--v);animation-delay:.15s}.dots i:nth-child(3){background:var(--b);animation-delay:.3s}.tk{margin-left:8px;font-size:13px;font-weight:600;background:var(--mv);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;vertical-align:middle}.th{font-size:12.5px;font-weight:600;margin-bottom:6px;background:var(--mv);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}@media(prefers-reduced-motion:no-preference){.th,.tk{animation:mvf 3.5s ease-in-out infinite alternate}}
 @keyframes bl{50%{transform:translateY(-5px);opacity:.4}}
 #f{padding:8px 14px calc(10px + env(safe-area-inset-bottom))}
 .cb{position:relative;display:flex;flex-direction:column;gap:2px;background:var(--cd);border:1px solid var(--ln);border-radius:24px;padding:6px 8px 8px}
@@ -187,7 +187,7 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 <label>Groq API key (<a href="https://console.groq.com/keys" target="_blank" rel="noopener">get one</a>)</label><input id="kg" type="password" autocomplete="off" placeholder="gsk_…">
 <label>Groq API key 2 (<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">get one</a>)</label><input id="kj" type="password" autocomplete="off" placeholder="AIza…">
 <label>Google Client ID (enables Google sign-in)</label><input id="ci" placeholder="123…apps.googleusercontent.com">
-<p class="mu">Version 10. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
+<p class="mu">Version 12. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
 <button class="btn" id="sv">Save</button><button class="btn o" id="sx">Close</button></div></div>
 <div id="sb" class="hide"></div>
 <div id="ms" class="hide"><b class="gt">Choose model</b><div id="mr"></div><button class="btn" id="sd">Done</button></div>
@@ -220,19 +220,20 @@ async function gq(m,s,ax=[]){
  if(ax.some(a=>a.k==='pdf'))throw new Error('This Groq model cannot read PDFs. Pick a Groq Flash model for this one.');
  const v=ax.filter(a=>a.k==='img'),n=m.length-1,mo=v.length?VIS:(K.mg||MD[0][2][0]);
  const go=async t=>{const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+K.groq},body:JSON.stringify({model:mo,messages:[{role:'system',content:s},...m.map((x,i)=>({role:x.r,content:i===n&&v.length?[{type:'text',text:x.t},...v.map(a=>({type:'image_url',image_url:{url:a.d}}))]:x.t}))],temperature:.7,...(t?{tools:[{type:'browser_search'}]}:{})})});
-  const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);return j.choices[0].message.content||''};
+  const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);const g=j.choices[0].message;if(t&&(g.executed_tools||[]).length)lastSw=1;return g.content||''};
  const t=K.ws!==false&&!v.length&&/^openai\/gpt-oss/.test(mo);
- try{return await go(t)}catch(e){if(!t)throw e;return go(0)}}
+ const sw=t&&needsWeb(m);if(sw)setSt('Searching the web…');
+ try{return await go(t)}catch(e){if(!t)throw e;if(sw)setSt('Retrying without web search…');return go(0)}}
 async function gm(m,s,ax=[]){
  const n=m.length-1;
  const go=async(t,mo)=>{const r=await fetch(G+mo+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},body:JSON.stringify({systemInstruction:{parts:[{text:s}]},contents:m.map((x,i)=>({role:x.r==='user'?'user':'model',parts:[{text:x.t},...(i===n?ax.map(a=>({inlineData:{mimeType:a.mime,data:a.d.split(',')[1]}})):[])]})),...(t?{tools:[{google_search:{}}]}:{})})});
   const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);return j};
- const pk=K.mj||MD[1][2][0],t=K.ws!==false;let j,used=pk,e0;
+ const pk=K.mj||MD[1][2][0],t=K.ws!==false;let j,used=pk,e0;const sw=t&&needsWeb(m);if(sw)setSt('Searching the web…');
  for(const mo of [pk,...['gemini-3.8-flash','gemini-3.1-flash-lite'].filter(x=>x!==pk)]){
-  if(mo===ARG&&argNo)continue;try{try{j=await go(t,mo)}catch(e){if(!t)throw e;j=await go(0,mo)}used=mo;break}
-  catch(e){e0=e0||e;if(/api key|API_KEY/i.test(String(e.message)))break;if(mo===ARG&&/free|paid|billing|tier|quota|limit|permission|denied|not found|not supported/i.test(String(e.message)))argNo=1}}
+  if(mo===ARG&&argNo)continue;try{try{j=await go(t,mo)}catch(e){if(!t)throw e;if(sw)setSt('Retrying without web search…');j=await go(0,mo)}used=mo;break}
+  catch(e){e0=e0||e;setSt('Trying a backup model…');if(/api key|API_KEY/i.test(String(e.message)))break;if(mo===ARG&&/free|paid|billing|tier|quota|limit|permission|denied|not found|not supported/i.test(String(e.message)))argNo=1}}
  if(!j)throw e0;
- const c=(j.candidates||[])[0];if(!c)throw new Error(j.promptFeedback?.blockReason?'Groq declined this request ('+j.promptFeedback.blockReason+').':'Groq sent back no answer.');const g=[...new Map((c.groundingMetadata?.groundingChunks||[]).filter(x=>x.web).map(x=>[x.web.title||x.web.uri,x.web])).values()].slice(0,4);
+ const c=(j.candidates||[])[0];if(!c)throw new Error(j.promptFeedback?.blockReason?'Groq declined this request ('+j.promptFeedback.blockReason+').':'Groq sent back no answer.');const g=[...new Map((c.groundingMetadata?.groundingChunks||[]).filter(x=>x.web).map(x=>[x.web.title||x.web.uri,x.web])).values()].slice(0,4);if(g.length||(c.groundingMetadata?.webSearchQueries||[]).length)lastSw=1;
  return(used!==pk?'ℹ️ '+(pk===ARG?'Groq 4 Argon has no free tier (it needs a paid plan), so ':lb(pk)+' is not available on your key right now, so ')+lb(used)+' answered'+(pk===ARG?' for free.':'.')+'\n\n':'')+(c.content?.parts||[]).map(p=>p.text||'').join('')+(g.length?'\n\n🔎 Sources: '+g.map(x=>'['+(x.title||'link')+']('+x.uri+')').join(' · '):'')}
 async function ask(m,s,ax=[]){
  const d=new Date(),z=Intl.DateTimeFormat().resolvedOptions().timeZone,q=-d.getTimezoneOffset(),of=(q<0?'-':'+')+String(Math.floor(Math.abs(q)/60)).padStart(2,'0')+':'+String(Math.abs(q)%60).padStart(2,'0');
@@ -241,14 +242,15 @@ async function ask(m,s,ax=[]){
  m=m.map((x,i)=>x.r==='assistant'&&/clock|real-?time/i.test(x.t)&&/(don.?t|can.?t|cannot|not) (have|know|access|give|tell)/i.test(x.t)?{...x,t:'(earlier reply omitted)'}:i===m.length-1&&x.r==='user'?{...x,t:'['+ctx+']\n\n'+x.t}:x);
  let o=K.prov==='gemini'?['gemini','groq']:K.prov==='groq'?['groq','gemini']:K.groq?['groq','gemini']:['gemini','groq'];
  if(ax.length&&K.prov!=='groq'&&K.prov!=='gemini')o=['gemini','groq'];
- let er,fb=0;for(const p of o){if(!K[p])continue;try{const a=await(p==='groq'?gq:gm)(m,s,ax);return fb?'⚠️ '+(/quota|billing|exceed|free tier|permission/i.test(String(er.message||er))?'Your chosen model needs a paid plan or hit its limit':'Your chosen model failed ('+String(er.message||er).slice(0,90)+')')+', so a backup model answered.\n\n'+a:a}catch(e){er=e;fb=1}}
+ let er,fb=0;for(const p of o){if(!K[p])continue;try{const a=await(p==='groq'?gq:gm)(m,s,ax);return fb?'⚠️ '+(/quota|billing|exceed|free tier|permission/i.test(String(er.message||er))?'Your chosen model needs a paid plan or hit its limit':'Your chosen model failed ('+String(er.message||er).slice(0,90)+')')+', so a backup model answered.\n\n'+a:a}catch(e){er=e;fb=1;setSt('Trying a backup model…')}}
  throw er||new Error('Add a Groq key in the setup first.')}
-async function img(p){
+async function img(p){setSt('Creating first draft…');
  if(K.gemini&&K.mi!=='pollinations')try{
   const r=await fetch(G+(K.mi||MD[2][2][0])+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},body:JSON.stringify({contents:[{parts:[{text:p}]}],generationConfig:{responseModalities:['TEXT','IMAGE']}})});
   const d=(await r.json()).candidates[0].content.parts.find(x=>x.inlineData);
   if(d)return'data:'+d.inlineData.mimeType+';base64,'+d.inlineData.data;
  }catch{}
+ if(K.gemini&&K.mi!=='pollinations')setSt('First try didn’t work, trying another image maker…');
  return'https://image.pollinations.ai/prompt/'+encodeURIComponent(p)+'?width=768&height=768&nologo=true&seed='+Date.now()}
 const shrink=(u,w=640)=>u.startsWith('data:')?new Promise(r=>{const i=new Image();i.onload=()=>{const k=Math.min(1,w/i.width),c=document.createElement('canvas');c.width=i.width*k;c.height=i.height*k;c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.8))};i.onerror=()=>r(u);i.src=u}):Promise.resolve(u);
 
@@ -263,11 +265,12 @@ const newChat=()=>{const c={id:Date.now().toString(36),tab,title:'New chat',m:[]
 function render(){
  const c=chats.find(x=>x.id===cur),box=$('#msgs'),T=UI[tab];
  if(!c||!c.m.length){box.innerHTML='<div class="empty"><img class="lg" src="'+LOGO+'" width="84" height="84" alt=""><h2 class="gt">'+T.hi+'</h2><div class="chips">'+T.ch.map(x=>'<button class="chip">'+esc(x)+'</button>').join('')+'</div></div>';return}
- box.innerHTML=c.m.map(m=>'<div class="m '+m.r+'">'+(m.r==='user'?esc(m.t).replace(/\n/g,'<br>'):md(m.t))+(m.img?'<img src="'+m.img+'" alt="">':'')+(m.att||[]).map(a=>a.k==='img'?'<img src="'+a.th+'" alt="">':'<div class="fc">'+(a.k==='pdf'?'📕 ':'📄 ')+esc(a.n)+'</div>').join('')+'</div>').join('')+(busy?'<div class="m assistant dots"><i></i><i></i><i></i></div>':'');
+ box.innerHTML=c.m.map(m=>'<div class="m '+m.r+'">'+(m.r==='user'?esc(m.t).replace(/\n/g,'<br>'):(m.th?'<div class="th">'+thTxt(m.th)+(m.sw?' · searched the web':'')+'</div>':'')+md(m.t))+(m.img?'<img src="'+m.img+'" alt="">':'')+(m.att||[]).map(a=>a.k==='img'?'<img src="'+a.th+'" alt="">':'<div class="fc">'+(a.k==='pdf'?'📕 ':'📄 ')+esc(a.n)+'</div>').join('')+'</div>').join('')+(busy?'<div class="m assistant dots"><i></i><i></i><i></i><span class="tk" id="thk">'+stat+' '+thNow()+'s</span></div>':'');
  box.scrollTop=box.scrollHeight;
  const l=box.querySelector('.m:last-child');
  if(toTop&&l&&l.classList.contains('assistant'))box.scrollTop+=l.getBoundingClientRect().top-box.getBoundingClientRect().top-8;
  toTop=false}
+let t0=0,tkI=null,stat='Thinking…',lastSw=0;const setSt=t=>{stat=t;const e=$('#thk');if(e)e.textContent=stat+' '+thNow()+'s';try{if(vcOn)vcSt(t)}catch{}};const needsWeb=m=>{const x=((m[m.length-1]||{}).t||'').replace(/^\[REAL CLOCK[\s\S]*?\]\n\n/,'');return /\b(news|latest|today|tonight|yesterday|tomorrow|this (week|month|year)|right now|current(ly)?|price|stock|weather|forecast|scores?|fixtures?|results?|winner|standings|release date|who is|who's|trending|exchange rate|open now|near me|20[2-9]\d)\b/i.test(x)};const thNow=()=>t0?Math.max(0,Math.floor((Date.now()-t0)/1000)):0,thTxt=n=>'Thought for '+n+(n===1?' second':' seconds');
 let rid=null,rdn=null;
 function list(){$('#list').innerHTML=chats.filter(c=>c.tab===tab&&c.m.length).sort((a,b)=>!!b.pin-!!a.pin).map(c=>'<div class="ci'+(c.id===cur?' on':'')+(rid===c.id?' ed':'')+(rdn===c.id?' dn':'')+'" data-id="'+c.id+'">'+(rid===c.id?'<input class="rn" maxlength="60">':'<span>'+(c.pin?'📌 ':'')+esc(c.title)+'</span>')+'</div>').join('')||'<p class="mu">Your chats will be saved here. Hold one for Pin, Rename and Delete.</p>';
  const ri=$('#list .rn');if(ri){ri.value=chats.find(x=>x.id===rid).title;ri.focus();ri.select()}}
@@ -278,17 +281,17 @@ async function send(txt){
  const c=chats.find(x=>x.id===cur)||newChat();
  const isImg=!at.length&&tab==='chat'&&(/^\/(image|imagine)\s+/i.test(txt)||/^(draw|paint|imagine|generate|create|make)\b.{0,30}\b(image|picture|photo|artwork|illustration|wallpaper)\b/i.test(txt));
  c.m.push({r:'user',t:txt,att:at.length?at.map(a=>({n:a.n,k:a.k,th:a.th})):undefined,x:at.filter(a=>a.k==='txt').map(a=>'File: '+a.n+'\n```\n'+a.d+'\n```').join('\n\n')||undefined});if(c.title==='New chat')c.title=txt.replace(/^\/\w+\s+/,'').slice(0,34);
- busy=true;$('#in').value='';$('#in').style.height='auto';render();list();
+ lastSw=0;setSt(isImg?'Creating first draft…':at.some(a=>a.k==='img')?'Looking at your image…':at.some(a=>a.k==='pdf')?'Reading your PDF…':at.some(a=>a.k==='txt')?'Reading your file…':'Thinking…');busy=true;t0=Date.now();clearInterval(tkI);tkI=setInterval(()=>{const e=$('#thk');if(e)e.textContent=stat+' '+thNow()+'s'},1000);$('#in').value='';$('#in').style.height='auto';render();list();
  try{
-  if(isImg){const q=txt.replace(/^\/\w+\s+/,'');c.m.push({r:'assistant',t:'🎨 '+q,img:await shrink(await img(q))})}
+  if(isImg){const q=txt.replace(/^\/\w+\s+/,'');const u=await img(q);setSt('Adding finishing touches…');c.m.push({r:'assistant',t:'🎨 '+q,img:await shrink(u)})}
   else{
    const h=c.m.filter(x=>!x.img&&!x.t.startsWith('⚠️')&&!/^\/(image|imagine)\s/i.test(x.t)).slice(-20).map(x=>({r:x.r,t:(x.x?x.x+'\n\n':'')+x.t}));
    while(h.length&&h[0].r!=='user')h.shift();
-   const a=await ask(h,SYS[tab],at.filter(x=>x.k!=='txt'));c.m.push({r:'assistant',t:a});
+   const a=await ask(h,SYS[tab],at.filter(x=>x.k!=='txt'));c.m.push({r:'assistant',t:a,th:Math.max(1,Math.round((Date.now()-t0)/1000)),sw:lastSw?1:undefined});
    const m=tab!=='chat'&&/```html\s*\n([\s\S]*?)```/i.exec(a);if(m)pv(m[1]);
   }
  }catch(e){c.m.push({r:'assistant',t:'⚠️ '+(e.message||e)+'\n\nCheck your keys in the setup (⚙). If you opened this file in a preview, open it in your browser instead, because previews block outside requests.'})}
- busy=false;save();toTop=true;render();list()}
+ busy=false;clearInterval(tkI);save();toTop=true;render();list()}
 
 const pv=c=>{code=c;$('#fr').srcdoc=c;$('#pv').classList.remove('hide')};
 $('#px').onclick=()=>{$('#pv').classList.add('hide');$('#fr').srcdoc=''};
@@ -370,8 +373,8 @@ async function stt(b){
  throw er||new Error('Add a Groq or Gemini key to hear you')}
 async function vcTurn(t){const c=chats.find(x=>x.id===cur)||newChat();c.m.push({r:'user',t});if(c.title==='New chat')c.title=t.slice(0,34);save();render();list();
  const h=c.m.filter(x=>!x.img&&!x.t.startsWith('⚠️')).slice(-12).map(x=>({r:x.r,t:x.t}));while(h.length&&h[0].r!=='user')h.shift();
- const a=await ask(h,SYS.chat+' You are on a live voice call, speaking with the male voice named '+vo.n+'.'+lgPrompt()+' Reply as spoken words: warm and natural, one to three short sentences, no markdown, lists, emojis or code.');
- c.m.push({r:'assistant',t:a});save();render();list();return a}
+ lastSw=0;const t1=Date.now(),a=await ask(h,SYS.chat+' You are on a live voice call, speaking with the male voice named '+vo.n+'.'+lgPrompt()+' Reply as spoken words: warm and natural, one to three short sentences, no markdown, lists, emojis or code.');
+ c.m.push({r:'assistant',t:a,th:Math.max(1,Math.round((Date.now()-t1)/1000)),sw:lastSw?1:undefined});save();render();list();return a}
 // voice calls, rewritten for WebView apps (Appilix): tap the orb to send if auto-detect can't hear you
 let vo=VO.find(v=>v.n===K.vo)||VO[0],vcOn=false,vcHi=0,vcTok=0,vcBusy=false,rec=null,tapGo=null,mic=null,ac=null,an=null,micErr='',vcDbg={};
 const HAL=/^\W*(thank you|thanks for watching|you|bye)\W*$/i;
