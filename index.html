@@ -175,13 +175,13 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 <label>Groq API key (<a href="https://console.groq.com/keys" target="_blank" rel="noopener">get one</a>)</label><input id="kg" type="password" autocomplete="off" placeholder="gsk_…">
 <label>Groq API key 2 (<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">get one</a>)</label><input id="kj" type="password" autocomplete="off" placeholder="AIza…">
 <label>Google Client ID (enables Google sign-in)</label><input id="ci" placeholder="123…apps.googleusercontent.com">
-<p class="mu">Version 8. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
+<p class="mu">Version 9. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
 <button class="btn" id="sv">Save</button><button class="btn o" id="sx">Close</button></div></div>
 <div id="sb" class="hide"></div>
 <div id="ms" class="hide"><b class="gt">Choose model</b><div id="mr"></div><button class="btn" id="sd">Done</button></div>
 <div id="cb" class="hide"></div>
 <div id="cm" class="pop hide"><button type="button" data-a="pin">📌 Pin</button><button type="button" data-a="ren">✏️ Rename</button><button type="button" data-a="del">🗑️ Delete</button></div>
-<div id="vc" class="scr hide"><p class="mu">Voice call</p><h1 class="gt" id="vn"></h1><div class="orb"></div><p class="mu" id="vs"></p><div class="chips" id="vl"></div><button type="button" class="ec" id="ve">End call</button></div>
+<div id="vc" class="scr hide"><p class="mu">Voice call</p><h1 class="gt" id="vn"></h1><div class="orb"></div><p class="mu" id="vs"></p><div class="chips" id="vl"></div><select id="vg" aria-label="Language you speak" style="background:#ffffff0d;color:inherit;border:1px solid var(--ln);border-radius:999px;padding:8px 14px;font-size:13px;color-scheme:dark;max-width:90%"></select><p class="mu" id="vgn" style="max-width:90%;font-size:12px"></p><button type="button" class="ec" id="ve">End call</button></div>
 <div id="toast"></div>
 
 <script>
@@ -322,17 +322,43 @@ const VO=[{n:'Jett',p:.9,r:1.12},{n:'Rex',p:.7,r:1},{n:'Cover',p:.8,r:.94},{n:'A
 const MALE=/\b(male|david|mark|james|george|daniel|alex|fred|ralph|tom|aaron|arthur|gordon|guy|ryan|eric|rishi|oliver|thomas|jorge|diego|evan|nathan|bruce|albert|reed|liam|matthew|paul|richard)\b/i;
 const vcClean=t=>t.replace(/^(ℹ️|⚠️)[^\n]*\n*/,'').replace(/```[\s\S]*?```/g,' I put the code in the chat. ').replace(/🔎 Sources:[\s\S]*$/,'').replace(/\[([^\]]+)\]\([^)]*\)/g,'$1').replace(/https?:\/\/\S+/g,'').replace(/\p{Extended_Pictographic}/gu,'').replace(/[*_`#>~]/g,'').replace(/\s+/g,' ').trim().slice(0,700);
 const vcPick=()=>{$('#vn').textContent=vo.n;$('#vl').innerHTML=VO.map(v=>'<button type="button" class="chip'+(v===vo?' on':'')+'" data-v="'+v.n+'">'+v.n+'</button>').join('')};
-function vcVoice(){const all=speechSynthesis.getVoices(),lg=(navigator.language||'en').slice(0,2).toLowerCase(),L2=all.filter(v=>v.lang.toLowerCase().startsWith(lg)),m=L2.filter(v=>MALE.test(v.name)),pool=m.length?m:L2;return pool.length?pool[VO.indexOf(vo)%pool.length]:null}
+function vcVoice(){const all=speechSynthesis.getVoices(),lg=(lgSel().c||navigator.language||'en').slice(0,2).toLowerCase(),L2=all.filter(v=>v.lang.toLowerCase().startsWith(lg)),m=L2.filter(v=>MALE.test(v.name)),pool=m.length?m:L2;return pool.length?pool[VO.indexOf(vo)%pool.length]:null}
 const lvl=()=>{if(!an)return 0;const b=new Uint8Array(an.fftSize);an.getByteTimeDomainData(b);let s=0;for(const x of b){const d=(x-128)/128;s+=d*d}return Math.sqrt(s/b.length)};
+// languages for the call: c = ISO code sent to speech recognition, w = on Whisper's official list, b = phone-voice locale
+const NOZ='isn’t on Whisper’s language list, so your voice is sent to Gemini to transcribe (needs a Gemini key)';
+const LG=[
+{n:'Auto-detect',c:'',w:1,b:''},
+{n:'English',c:'en',w:1,b:'en-ZA'},
+{n:'Afrikaans',c:'af',w:1,b:'af-ZA'},
+{n:'isiZulu',c:'zu',w:0,b:'zu-ZA',note:'isiZulu '+NOZ+'. The spoken voice may sound English.'},
+{n:'isiXhosa',c:'xh',w:0,b:'xh-ZA',note:'isiXhosa '+NOZ+'. The spoken voice may sound English.'},
+{n:'Sesotho',c:'st',w:0,b:'st-ZA',note:'Sesotho '+NOZ+'.'},
+{n:'Setswana',c:'tn',w:0,b:'tn-ZA',note:'Setswana '+NOZ+'. The spoken voice may sound English.'},
+{n:'Swahili',c:'sw',w:1,b:'sw-KE'},
+{n:'Spanish',c:'es',w:1,b:'es-ES'},
+{n:'French',c:'fr',w:1,b:'fr-FR'},
+{n:'Portuguese',c:'pt',w:1,b:'pt-PT'},
+{n:'German',c:'de',w:1,b:'de-DE'},
+{n:'Hindi',c:'hi',w:1,b:'hi-IN'},
+{n:'Arabic',c:'ar',w:1,b:'ar-SA'},
+{n:'Chinese',c:'zh',w:1,b:'zh-CN'}];
+const lgSel=()=>LG.find(x=>x.c===(K.lg||''))||LG[0];
+const lgPrompt=()=>{const g=lgSel();return g.c?' The caller speaks '+g.n+', so always reply in '+g.n+'.':' Reply in whatever language the caller speaks.'};
+function vcLg(){const e=$('#vg');if(!e)return;e.innerHTML=LG.map(x=>'<option value="'+x.c+'">'+x.n+'</option>').join('');e.value=lgSel().c;const n=$('#vgn');if(n)n.textContent=lgSel().note||''}
 async function stt(b){
- const ext=/mp4|aac/.test(b.type)?'mp4':/ogg/.test(b.type)?'ogg':'webm';let er;
- if(K.groq)try{const f=new FormData();f.append('file',b,'voice.'+ext);f.append('model','whisper-large-v3-turbo');f.append('temperature','0');const r=await fetch('https://api.groq.com/openai/v1/audio/transcriptions',{method:'POST',headers:{Authorization:'Bearer '+K.groq},body:f});const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);return(j.text||'').trim()}catch(e){er=e;if(!K.gemini)throw e}
- const d=(await rd(b)).split(',')[1];
- const r=await fetch(G+'gemini-flash-latest:generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},body:JSON.stringify({contents:[{parts:[{text:'Transcribe this audio word for word. Reply with only the transcript and nothing else. If there is no clear speech, reply with nothing.'},{inlineData:{mimeType:(b.type||'audio/webm').split(';')[0],data:d}}]}]})});
- const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);return((j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('')).trim()}
+ const ext=/mp4|aac/.test(b.type)?'mp4':/ogg/.test(b.type)?'ogg':'webm',g=lgSel();
+ const viaW=async()=>{const f=new FormData();f.append('file',b,'voice.'+ext);f.append('model','whisper-large-v3-turbo');f.append('temperature','0');if(g.c&&g.w)f.append('language',g.c);
+  const r=await fetch('https://api.groq.com/openai/v1/audio/transcriptions',{method:'POST',headers:{Authorization:'Bearer '+K.groq},body:f});const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);return(j.text||'').trim()};
+ const viaG=async()=>{const d=(await rd(b)).split(',')[1];
+  const r=await fetch(G+'gemini-flash-latest:generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},body:JSON.stringify({contents:[{parts:[{text:'Transcribe this audio word for word.'+(g.c?' The speaker is speaking '+g.n+'.':'')+' Reply with only the transcript and nothing else. If there is no clear speech, reply with nothing.'},{inlineData:{mimeType:(b.type||'audio/webm').split(';')[0],data:d}}]}]})});
+  const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);return((j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('')).trim()};
+ const fs=[];if(K.groq)fs.push(viaW);if(K.gemini)fs.push(viaG);
+ if(g.c&&!g.w&&K.gemini)fs.reverse();
+ let er;for(const f of fs){try{return await f()}catch(e){er=e}}
+ throw er||new Error('Add a Groq or Gemini key to hear you')}
 async function vcTurn(t){const c=chats.find(x=>x.id===cur)||newChat();c.m.push({r:'user',t});if(c.title==='New chat')c.title=t.slice(0,34);save();render();list();
  const h=c.m.filter(x=>!x.img&&!x.t.startsWith('⚠️')).slice(-12).map(x=>({r:x.r,t:x.t}));while(h.length&&h[0].r!=='user')h.shift();
- const a=await ask(h,SYS.chat+' You are on a live voice call, speaking with the male voice named '+vo.n+'. Reply as spoken words: warm and natural, one to three short sentences, no markdown, lists, emojis or code.');
+ const a=await ask(h,SYS.chat+' You are on a live voice call, speaking with the male voice named '+vo.n+'.'+lgPrompt()+' Reply as spoken words: warm and natural, one to three short sentences, no markdown, lists, emojis or code.');
  c.m.push({r:'assistant',t:a});save();render();list();return a}
 // voice calls, rewritten for WebView apps (Appilix): tap the orb to send if auto-detect can't hear you
 let vo=VO.find(v=>v.n===K.vo)||VO[0],vcOn=false,vcHi=0,vcTok=0,vcBusy=false,rec=null,tapGo=null,mic=null,ac=null,an=null,micErr='',vcDbg={};
@@ -355,7 +381,7 @@ function sayDev(t){return new Promise(ok=>{
  wd=setTimeout(()=>{try{S.cancel()}catch{}fin()},Math.min(60000,5000+t.length*120));
  try{S.cancel();S.resume()}catch{}
  setTimeout(()=>{if(d||!vcOn)return fin();let go=0;
-  ps.forEach((x,k)=>{const u=new SpeechSynthesisUtterance(x);if(v){u.voice=v;u.lang=v.lang}u.pitch=vo.p;u.rate=vo.r;if(k===0)u.onstart=()=>{go=1;clearTimeout(ws)};if(k===ps.length-1)u.onend=u.onerror=fin;S.speak(u)});
+  ps.forEach((x,k)=>{const u=new SpeechSynthesisUtterance(x);if(v){u.voice=v;u.lang=v.lang}else if(lgSel().b)u.lang=lgSel().b;u.pitch=vo.p;u.rate=vo.r;if(k===0)u.onstart=()=>{go=1;clearTimeout(ws)};if(k===ps.length-1)u.onend=u.onerror=fin;S.speak(u)});
   ws=setTimeout(()=>{if(!go){vcDbg.voice='silent (showing text)';vcInfo();try{S.cancel()}catch{}fin()}},4500)},80)})}
 // real AI voices: Gemini speech first, Groq speech as backup, phone voice last
 const tVO={Jett:['Puck','troy'],Rex:['Fenrir','austin'],Cover:['Charon','daniel'],Atlas:['Orus','austin'],Charen:['Algenib','daniel']},tGM=['gemini-3.8-flash-tts','gemini-3.1-flash-tts-preview','gemini-3.8-flash-lite-tts','gemini-2.5-pro-preview-tts','gemini-2.5-flash-preview-tts'],tBad={},tWarn={};
@@ -390,7 +416,7 @@ async function tQ(t){
  const r=await fetch('https://api.groq.com/openai/v1/audio/speech',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+K.groq},body:JSON.stringify({model:'canopylabs/orpheus-v1-english',voice:tVO[vo.n][1],input:t,response_format:'wav'})});
  if(!r.ok){let m='HTTP '+r.status;try{m=(await r.json()).error?.message||m}catch{}const e=new Error(m);e.st=r.status;throw e}
  return new Blob([await r.arrayBuffer()],{type:'audio/wav'})}
-const tEng=()=>[...(K.gemini?[['Gemini',tG,450]]:[]),...(K.groq?[['Groq',tQ,190]]:[])];
+const tEng=()=>[...(K.gemini?[['Gemini',tG,450]]:[]),...(K.groq&&/^(en)?$/.test(lgSel().c)?[['Groq',tQ,190]]:[])];
 function tSplit(t,mx){const o=[];let c='';
  for(const s of t.match(/[^.!?]+[.!?]*\s*/g)||[t]){let x=s.trim();if(!x)continue;
   if(c&&(c+' '+x).length>mx){o.push(c);c=''}
@@ -489,10 +515,10 @@ async function vcStart(){
  const ok=await micOn();vcBusy=false;
  if(tk!==vcTok){micOff();return}
  if(!ok){vcEnd();return toast(micMsg())}
- vcDbg={mic:'ok',audio:ac?ac.state:'none',voices:window.speechSynthesis?speechSynthesis.getVoices().length:'none'};vcInfo();
+ vcDbg={mic:'ok',lang:lgSel().n,audio:ac?ac.state:'none',voices:window.speechSynthesis?speechSynthesis.getVoices().length:'none'};vcInfo();
  vcOn=true;vcHi=0;vcRun()}
 function vcEnd(){vcTok++;vcOn=false;tapGo=null;try{rec&&rec.abort()}catch{}micOff();stopSay();$('#vc').classList.add('hide')}
-$('#cl').onclick=vcStart;$('#ve').onclick=vcEnd;$('#vc .orb').onclick=()=>{tapGo&&tapGo();stopSay()};
+vcLg();$('#vg').onchange=e=>{K.lg=e.target.value;L.setItem('groq.keys',JSON.stringify(K));vcLg();vcDbg.lang=lgSel().n;vcInfo()};$('#cl').onclick=vcStart;$('#ve').onclick=vcEnd;$('#vc .orb').onclick=()=>{tapGo&&tapGo();stopSay()};
 $('#vl').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;vo=VO.find(v=>v.n===b.dataset.v);K.vo=vo.n;L.setItem('groq.keys',JSON.stringify(K));vcPick();vcHi=1;stopSay();try{rec&&rec.abort()}catch{}};
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&vcOn)vcEnd()});
 // + menu: camera, photos, files
