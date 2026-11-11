@@ -106,6 +106,18 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 .btn.o,.ib,.mc,.chip,nav button:not(.on){border:1.5px solid transparent!important;background-color:transparent!important;background-image:linear-gradient(#120a24,#120a24),var(--mv)!important;background-clip:padding-box,border-box!important;background-origin:border-box!important;background-size:auto,200% 100%!important}
 @keyframes mvf{to{background-position:100% 0}}
 @keyframes mvo{to{background-position:0 0,100% 0}}
+/* language picker */
+.lgb{border:1.5px solid transparent;border-radius:999px;padding:10px 20px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;background:linear-gradient(#050b1e,#050b1e) padding-box,var(--mv) border-box;background-size:auto,200% 100%;box-shadow:0 0 16px #a855f766}
+#vgs{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;gap:12px;padding:calc(22px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));background:radial-gradient(80% 38% at 50% 0,#1d4ed855,transparent),radial-gradient(60% 30% at 100% 100%,#a855f726,transparent),#040a1c}
+#vgs.hide{display:none}
+.lgt{margin:0;font-size:30px;font-weight:800;letter-spacing:.5px;background:var(--mv);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+#vgl{width:100%;max-width:420px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:2px;-webkit-overflow-scrolling:touch}
+.lgr{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;border:1.5px solid #14264f;border-radius:14px;padding:14px 16px;font-size:16px;color:var(--tx);background:#08122b;cursor:pointer}
+.lgr.on{font-weight:700;color:#fff;border-color:transparent;background:linear-gradient(#0a1a3d,#0a1a3d) padding-box,var(--mv) border-box;background-size:auto,200% 100%;box-shadow:0 0 14px #a855f777}
+.lgr.on span{color:#38bdf8}
+.lgx{border:1.5px solid transparent;border-radius:999px;padding:10px 28px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;background:linear-gradient(#050b1e,#050b1e) padding-box,var(--mv) border-box;background-size:auto,200% 100%}
+@media(prefers-reduced-motion:no-preference){.lgb,.lgr.on,.lgx{animation:mvo 3.5s ease-in-out infinite alternate}.lgt{animation:mvf 3.5s ease-in-out infinite alternate}}
+
 @media(prefers-reduced-motion:no-preference){.btn:not(.o),nav button.on{animation:mvf 3.5s ease-in-out infinite alternate}.btn.o,.ib,.mc,.chip,nav button:not(.on){animation:mvo 3.5s ease-in-out infinite alternate}}
 .ci{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .rn{width:100%;background:transparent;border:0;border-bottom:1px solid var(--v);outline:none;font:inherit;color:inherit;padding:2px 0}
@@ -175,13 +187,13 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 <label>Groq API key (<a href="https://console.groq.com/keys" target="_blank" rel="noopener">get one</a>)</label><input id="kg" type="password" autocomplete="off" placeholder="gsk_…">
 <label>Groq API key 2 (<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">get one</a>)</label><input id="kj" type="password" autocomplete="off" placeholder="AIza…">
 <label>Google Client ID (enables Google sign-in)</label><input id="ci" placeholder="123…apps.googleusercontent.com">
-<p class="mu">Version 9. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
+<p class="mu">Version 10. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
 <button class="btn" id="sv">Save</button><button class="btn o" id="sx">Close</button></div></div>
 <div id="sb" class="hide"></div>
 <div id="ms" class="hide"><b class="gt">Choose model</b><div id="mr"></div><button class="btn" id="sd">Done</button></div>
 <div id="cb" class="hide"></div>
 <div id="cm" class="pop hide"><button type="button" data-a="pin">📌 Pin</button><button type="button" data-a="ren">✏️ Rename</button><button type="button" data-a="del">🗑️ Delete</button></div>
-<div id="vc" class="scr hide"><p class="mu">Voice call</p><h1 class="gt" id="vn"></h1><div class="orb"></div><p class="mu" id="vs"></p><div class="chips" id="vl"></div><select id="vg" aria-label="Language you speak" style="background:#ffffff0d;color:inherit;border:1px solid var(--ln);border-radius:999px;padding:8px 14px;font-size:13px;color-scheme:dark;max-width:90%"></select><p class="mu" id="vgn" style="max-width:90%;font-size:12px"></p><button type="button" class="ec" id="ve">End call</button></div>
+<div id="vc" class="scr hide"><p class="mu">Voice call</p><h1 class="gt" id="vn"></h1><div class="orb"></div><p class="mu" id="vs"></p><div class="chips" id="vl"></div><button type="button" class="lgb" id="vgb"></button><p class="mu" id="vgn" style="max-width:90%;font-size:12px"></p><button type="button" class="ec" id="ve">End call</button></div><div id="vgs" class="hide"><h2 class="lgt">Languages</h2><div id="vgl"></div><button type="button" class="lgx" id="vgx">Close</button></div>
 <div id="toast"></div>
 
 <script>
@@ -344,7 +356,7 @@ const LG=[
 {n:'Chinese',c:'zh',w:1,b:'zh-CN'}];
 const lgSel=()=>LG.find(x=>x.c===(K.lg||''))||LG[0];
 const lgPrompt=()=>{const g=lgSel();return g.c?' The caller speaks '+g.n+', so always reply in '+g.n+'.':' Reply in whatever language the caller speaks.'};
-function vcLg(){const e=$('#vg');if(!e)return;e.innerHTML=LG.map(x=>'<option value="'+x.c+'">'+x.n+'</option>').join('');e.value=lgSel().c;const n=$('#vgn');if(n)n.textContent=lgSel().note||''}
+function vcLg(){const b=$('#vgb'),l=$('#vgl');if(!b||!l)return;const g=lgSel();b.textContent='Language: '+g.n+' ▾';l.innerHTML=LG.map(x=>'<button type="button" class="lgr'+(x===g?' on':'')+'" data-c="'+x.c+'">'+x.n+(x===g?'<span>✓</span>':'')+'</button>').join('');const n=$('#vgn');if(n)n.textContent=g.note||''}
 async function stt(b){
  const ext=/mp4|aac/.test(b.type)?'mp4':/ogg/.test(b.type)?'ogg':'webm',g=lgSel();
  const viaW=async()=>{const f=new FormData();f.append('file',b,'voice.'+ext);f.append('model','whisper-large-v3-turbo');f.append('temperature','0');if(g.c&&g.w)f.append('language',g.c);
@@ -517,8 +529,8 @@ async function vcStart(){
  if(!ok){vcEnd();return toast(micMsg())}
  vcDbg={mic:'ok',lang:lgSel().n,audio:ac?ac.state:'none',voices:window.speechSynthesis?speechSynthesis.getVoices().length:'none'};vcInfo();
  vcOn=true;vcHi=0;vcRun()}
-function vcEnd(){vcTok++;vcOn=false;tapGo=null;try{rec&&rec.abort()}catch{}micOff();stopSay();$('#vc').classList.add('hide')}
-vcLg();$('#vg').onchange=e=>{K.lg=e.target.value;L.setItem('groq.keys',JSON.stringify(K));vcLg();vcDbg.lang=lgSel().n;vcInfo()};$('#cl').onclick=vcStart;$('#ve').onclick=vcEnd;$('#vc .orb').onclick=()=>{tapGo&&tapGo();stopSay()};
+function vcEnd(){vcTok++;vcOn=false;tapGo=null;try{rec&&rec.abort()}catch{}micOff();stopSay();$('#vgs').classList.add('hide');$('#vc').classList.add('hide')}
+vcLg();$('#vgb').onclick=()=>$('#vgs').classList.remove('hide');$('#vgx').onclick=()=>$('#vgs').classList.add('hide');$('#vgl').onclick=e=>{const b=e.target.closest('[data-c]');if(!b)return;K.lg=b.dataset.c;L.setItem('groq.keys',JSON.stringify(K));vcLg();$('#vgs').classList.add('hide');vcDbg.lang=lgSel().n;vcInfo()};$('#cl').onclick=vcStart;$('#ve').onclick=vcEnd;$('#vc .orb').onclick=()=>{tapGo&&tapGo();stopSay()};
 $('#vl').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;vo=VO.find(v=>v.n===b.dataset.v);K.vo=vo.n;L.setItem('groq.keys',JSON.stringify(K));vcPick();vcHi=1;stopSay();try{rec&&rec.abort()}catch{}};
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&vcOn)vcEnd()});
 // + menu: camera, photos, files
