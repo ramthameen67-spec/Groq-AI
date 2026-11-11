@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Groq">
 
 <title>Groq: Understand The Multiverse</title>
+<meta name="description" content="Groq — chat, code, create and play with AI.">
 <style>
 :root{color-scheme:dark;--b:#38bdf8;--p:#ff3d9a;--v:#a855f7;--bg:#07040f;--cd:#120a24;--ln:#2d1d52;--tx:#f4efff;--mu:#9d92c4;--g:linear-gradient(90deg,#38bdf8,#a855f7,#ff3d9a)}
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
@@ -44,7 +45,7 @@ nav button.on{background:var(--g);color:#fff;border-color:transparent;box-shadow
 .m{max-width:90%;padding:10px 14px;border-radius:18px;overflow-wrap:anywhere}
 .m.user{align-self:flex-end;background:linear-gradient(135deg,var(--p),var(--v))}
 .m.assistant{align-self:flex-start;background:var(--cd);border:1px solid var(--ln)}
-.m img{max-width:100%;border-radius:12px;display:block;margin-top:8px}
+.m img{max-width:100%;border-radius:12px;display:block;margin-top:8px}.ma{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px;padding-top:7px;border-top:1px solid #ffffff12}.ma button{border:1px solid #ffffff20;background:#ffffff0b;color:var(--mu);border-radius:999px;padding:4px 10px;font-size:11px;cursor:pointer}.ma button:active{background:#a855f733;color:#fff}.ds{width:100%;border:1px solid var(--ln);background:#ffffff09;border-radius:12px;padding:10px 12px;outline:none;color:var(--tx)}.ds:focus{border-color:var(--v)}
 pre{background:#05020c;border:1px solid var(--ln);border-radius:12px;padding:10px;overflow:auto;margin:8px 0;font-size:12.5px}
 code{font-family:ui-monospace,Menlo,monospace;color:#7dd3fc}
 .empty{margin:auto;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
@@ -195,7 +196,7 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 </div>
 
 <div id="bk" class="hide"></div>
-<aside id="dr"><button class="btn" id="nc">New chat</button><p class="mu">Saved chats</p><div id="list"></div><div class="me"><div id="av" class="av"></div><b id="un" style="flex:1;min-width:0"></b><button class="btn o" id="so">Sign out</button></div></aside>
+<aside id="dr"><button class="btn" id="nc">＋ New chat</button><input class="ds" id="cs" type="search" placeholder="Search saved chats…" autocomplete="off"><div style="display:flex;align-items:center;gap:8px"><p class="mu" style="flex:1">Saved chats</p><button class="btn o" id="ex">Export</button></div><div id="list"></div><div class="me"><div id="av" class="av"></div><b id="un" style="flex:1;min-width:0"></b><button class="btn o" id="so">Sign out</button></div></aside>
 
 <div id="pv" class="scr hide"><div class="bar"><b class="gt">Live preview</b><button class="btn o" id="cp">Copy code</button><button class="btn o" id="px">Close</button></div><iframe id="fr" sandbox="allow-scripts allow-modals allow-forms allow-pointer-lock"></iframe></div>
 
@@ -203,7 +204,7 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 <label>Groq API key (<a href="https://console.groq.com/keys" target="_blank" rel="noopener">get one</a>)</label><input id="kg" type="password" autocomplete="off" placeholder="gsk_…">
 <label>Groq API key 2 (<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">get one</a>)</label><input id="kj" type="password" autocomplete="off" placeholder="AIza…">
 <label>Google Client ID (enables Google sign-in)</label><input id="ci" placeholder="123…apps.googleusercontent.com">
-<p class="mu">Version 14. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
+<p class="mu">Version 17. Choose models in the chat box (the chip next to +). Keys stay on this device. Google sign-in needs this page hosted on a web address you added in Google Cloud.</p>
 <button class="btn" id="sv">Save</button><button class="btn o" id="sx">Close</button></div></div>
 <div id="sb" class="hide"></div>
 <div id="ms" class="hide"><b class="gt">Choose model</b><div id="mr"></div><button class="btn" id="sd">Done</button></div>
@@ -229,6 +230,8 @@ code:{ph:'Describe what to build…',hi:'What shall we build?',ch:['A neon to-do
 games:{ph:'Describe a game…',hi:'What shall we play?',ch:['Build Snake with touch controls','Build a Flappy Bird clone','Build a memory match game','Build a space shooter']}};
 const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),Math.max(3200,String(t).length*70))};
 const G='https://generativelanguage.googleapis.com/v1beta/models/';
+async function readJSON(r){const raw=await r.text();try{return raw?JSON.parse(raw):{}}catch{return {error:{message:'The server returned an unreadable response (HTTP '+r.status+').' }}}}
+const apiError=(j,r)=>j?.error?.message||j?.message||('Request failed (HTTP '+r.status+')');
 
 const ARG='gemini-4-argon';let argNo=0;const VIS='meta-llama/llama-4-scout-17b-16e-instruct';
 const MD=[['mg','Groq model',['openai/gpt-oss-120b','openai/gpt-oss-20b','groq/compound','groq/compound-mini','llama-3.3-70b-versatile','llama-3.1-8b-instant']],['mj','Groq model 2',['gemini-flash-latest','gemini-flash-lite-latest','gemini-pro-latest','gemini-3.8-flash','gemini-3.1-flash-lite','gemini-3-flash-preview','gemini-3.1-pro-preview','gemini-4-argon']],['mi','Image model',['gemini-2.5-flash-image','gemini-3-pro-image-preview','pollinations']]];
@@ -236,14 +239,14 @@ async function gq(m,s,ax=[],fast=0,sg=null){
  if(ax.some(a=>a.k==='pdf'))throw new Error('This Groq model cannot read PDFs. Pick a Groq Flash model for this one.');
  const v=ax.filter(a=>a.k==='img'),n=m.length-1,mo=v.length?VIS:(fast?'llama-3.1-8b-instant':(K.mg||MD[0][2][0]));
  const go=async t=>{const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+K.groq},signal:sg,body:JSON.stringify({model:mo,messages:[{role:'system',content:s},...m.map((x,i)=>({role:x.r,content:i===n&&v.length?[{type:'text',text:x.t},...v.map(a=>({type:'image_url',image_url:{url:a.d}}))]:x.t}))],temperature:.7,...(t?{tools:[{type:'browser_search'}]}:{})})});
-  const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);const g=j.choices[0].message;if(t&&(g.executed_tools||[]).length)lastSw=1;return g.content||''};
+  const j=await readJSON(r);if(!r.ok)throw new Error(apiError(j,r));const g=j.choices?.[0]?.message;if(!g)throw new Error("The model returned an empty response.");if(t&&(g.executed_tools||[]).length)lastSw=1;return g.content||''};
  const t=K.ws!==false&&!v.length&&/^openai\/gpt-oss/.test(mo);
  const sw=t&&needsWeb(m);if(sw)setSt('Searching the web…');
  try{return await go(t)}catch(e){if(!t||(sg&&sg.aborted))throw e;if(sw)setSt('Retrying without web search…');return go(0)}}
 async function gm(m,s,ax=[],fast=0,sg=null){
  const n=m.length-1;
  const go=async(t,mo)=>{const r=await fetch(G+mo+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},signal:sg,body:JSON.stringify({systemInstruction:{parts:[{text:s}]},contents:m.map((x,i)=>({role:x.r==='user'?'user':'model',parts:[{text:x.t},...(i===n?ax.map(a=>({inlineData:{mimeType:a.mime,data:a.d.split(',')[1]}})):[])]})),...(t?{tools:[{google_search:{}}]}:{})})});
-  const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);return j};
+  const j=await readJSON(r);if(!r.ok)throw new Error(apiError(j,r));return j};
  const pk=fast?'gemini-flash-lite-latest':(K.mj||MD[1][2][0]),t=!fast&&K.ws!==false;let j,used=pk,e0;const sw=t&&needsWeb(m);if(sw)setSt('Searching the web…');
  for(const mo of [pk,...(fast?['gemini-3.1-flash-lite']:['gemini-3.8-flash','gemini-3.1-flash-lite']).filter(x=>x!==pk)]){
   if(mo===ARG&&argNo)continue;try{try{j=await go(t,mo)}catch(e){if(!t||(sg&&sg.aborted))throw e;if(sw)setSt('Retrying without web search…');j=await go(0,mo)}used=mo;break}
@@ -287,8 +290,8 @@ async function ttlAI(u,a){
  const o=K.prov==='gemini'?['gemini','groq']:['groq','gemini'];let er;
  for(const p of o){if(!K[p])continue;try{
   let t='';
-  if(p==='groq'){const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+K.groq},body:JSON.stringify({model:'llama-3.1-8b-instant',messages:[{role:'system',content:sy},{role:'user',content:q}],temperature:.3,max_tokens:24})});const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);t=j.choices[0].message.content||''}
-  else{const r=await fetch(G+'gemini-flash-lite-latest:generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},body:JSON.stringify({systemInstruction:{parts:[{text:sy}]},contents:[{role:'user',parts:[{text:q}]}]})});const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);t=((j.candidates||[])[0]?.content?.parts||[]).map(x=>x.text||'').join('')}
+  if(p==='groq'){const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+K.groq},body:JSON.stringify({model:'llama-3.1-8b-instant',messages:[{role:'system',content:sy},{role:'user',content:q}],temperature:.3,max_tokens:24})});const j=await readJSON(r);if(!r.ok)throw new Error(apiError(j,r));t=j.choices?.[0]?.message?.content||''}
+  else{const r=await fetch(G+'gemini-flash-lite-latest:generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},body:JSON.stringify({systemInstruction:{parts:[{text:sy}]},contents:[{role:'user',parts:[{text:q}]}]})});const j=await readJSON(r);if(!r.ok)throw new Error(apiError(j,r));t=((j.candidates||[])[0]?.content?.parts||[]).map(x=>x.text||'').join('')}
   t=t.replace(/^[\s\S]*?title\s*:/i,'').split('\n').filter(x=>x.trim())[0]||'';
   t=t.replace(/^[\s"'“”*#-]+|[\s"'“”*.]+$/g,'').slice(0,40).trim();
   if(t)return t}catch(e){er=e}}
@@ -303,7 +306,7 @@ async function autoName(c){
 function render(){
  const c=chats.find(x=>x.id===cur),box=$('#msgs'),T=UI[tab];
  if(!c||!c.m.length){box.innerHTML='<div class="empty"><img class="lg" src="'+LOGO+'" width="84" height="84" alt=""><h2 class="gt">'+T.hi+'</h2><div class="chips">'+T.ch.map(x=>'<button class="chip">'+esc(x)+'</button>').join('')+'</div></div>';return}
- box.innerHTML=c.m.map(m=>'<div class="m '+m.r+'">'+(m.r==='user'?esc(m.t).replace(/\n/g,'<br>'):(m.th?'<div class="th">'+thTxt(m.th)+(m.sw?' · searched the web':'')+'</div>':'')+md(m.t))+(m.img?'<img src="'+m.img+'" alt="">':'')+(m.att||[]).map(a=>a.k==='img'?'<img src="'+a.th+'" alt="">':'<div class="fc">'+(a.k==='pdf'?'📕 ':'📄 ')+esc(a.n)+'</div>').join('')+'</div>').join('')+(busy?'<div class="m assistant dots"><i></i><i></i><i></i><span class="tk" id="thk">'+stat+' '+thNow()+'s</span></div>':'');
+ box.innerHTML=c.m.map((m,i)=>'<div class="m '+m.r+'">'+(m.r==='user'?esc(m.t).replace(/\n/g,'<br>'):(m.th?'<div class="th">'+thTxt(m.th)+(m.sw?' · searched the web':'')+'</div>':'')+md(m.t))+(m.img?'<img src="'+m.img+'" alt="">':'')+(m.att||[]).map(a=>a.k==='img'?'<img src="'+a.th+'" alt="">':'<div class="fc">'+(a.k==='pdf'?'📕 ':'📄 ')+esc(a.n)+'</div>').join('')+'<div class="ma"><button type="button" data-copy="'+encodeURIComponent(m.t)+'">Copy text</button></div></div>').join('')+(busy?'<div class="m assistant dots"><i></i><i></i><i></i><span class="tk" id="thk">'+stat+' '+thNow()+'s</span></div>':'');
  box.scrollTop=box.scrollHeight;
  const l=box.querySelector('.m:last-child');
  if(toTop&&l&&l.classList.contains('assistant'))box.scrollTop+=l.getBoundingClientRect().top-box.getBoundingClientRect().top-8;
@@ -320,7 +323,7 @@ async function ntDone(txt){
  }catch{}}
 let t0=0,tkI=null,stat='Thinking…',lastSw=0;const setSt=t=>{stat=t;const e=$('#thk');if(e)e.textContent=stat+' '+thNow()+'s';try{if(vcOn)vcSt(t)}catch{}};const needsWeb=m=>{const x=((m[m.length-1]||{}).t||'').replace(/^\[REAL CLOCK[\s\S]*?\]\n\n/,'');return /\b(news|latest|today|tonight|yesterday|tomorrow|this (week|month|year)|right now|current(ly)?|price|stock|weather|forecast|scores?|fixtures?|results?|winner|standings|release date|who is|who's|trending|exchange rate|open now|near me|20[2-9]\d)\b/i.test(x)};const thNow=()=>t0?Math.max(0,Math.floor((Date.now()-t0)/1000)):0,thTxt=n=>'Thought for '+n+(n===1?' second':' seconds');
 let rid=null,rdn=null;
-function list(){$('#list').innerHTML=chats.filter(c=>c.tab===tab&&c.m.length).sort((a,b)=>!!b.pin-!!a.pin).map(c=>'<div class="ci'+(c.id===cur?' on':'')+(rid===c.id?' ed':'')+(rdn===c.id?' dn':'')+'" data-id="'+c.id+'">'+(rid===c.id?'<input class="rn" maxlength="60">':'<span>'+(c.pin?'📌 ':'')+esc(c.title)+'</span>')+'</div>').join('')||'<p class="mu">Your chats will be saved here. Hold one for Pin, Rename and Delete.</p>';
+function list(){const q=($('#cs')?.value||'').trim().toLowerCase();$('#list').innerHTML=chats.filter(c=>c.tab===tab&&c.m.length&&(!q||(c.title+' '+c.m.map(x=>x.t).join(' ')).toLowerCase().includes(q))).sort((a,b)=>!!b.pin-!!a.pin).map(c=>'<div class="ci'+(c.id===cur?' on':'')+(rid===c.id?' ed':'')+(rdn===c.id?' dn':'')+'" data-id="'+c.id+'">'+(rid===c.id?'<input class="rn" maxlength="60">':'<span>'+(c.pin?'📌 ':'')+esc(c.title)+'</span>')+'</div>').join('')||'<p class="mu">Your chats will be saved here. Hold one for Pin, Rename and Delete.</p>';
  const ri=$('#list .rn');if(ri){ri.value=chats.find(x=>x.id===rid).title;ri.focus();ri.select()}}
 
 async function send(txt){
@@ -345,6 +348,21 @@ const pv=c=>{code=c;$('#fr').srcdoc=c;$('#pv').classList.remove('hide')};
 $('#px').onclick=()=>{$('#pv').classList.add('hide');$('#fr').srcdoc=''};
 $('#cp').onclick=()=>navigator.clipboard.writeText(code).then(()=>toast('Code copied'),()=>toast('Copy failed'));
 $('#msgs').onclick=e=>{const r=e.target.closest('.run'),c=e.target.closest('.chip');if(r)pv(decodeURIComponent(r.dataset.c));if(c)send(c.textContent)};
+$('#cs').oninput=()=>list();
+$('#ex').onclick=()=>{
+ const c=chats.find(x=>x.id===cur);
+ if(!c||!c.m.length)return toast('Open a chat first to export it.');
+ const body=c.m.map(x=>(x.r==='user'?'YOU':'GROQ')+':\n'+x.t).join('\n\n--------------------\n\n');
+ const blob=new Blob([c.title+'\n\n'+body],{type:'text/plain;charset=utf-8'}),u=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=u;a.download=(c.title||'groq-chat').replace(/[^a-z0-9-_ ]/gi,'').trim().replace(/\s+/g,'-')+'.txt';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);toast('Chat exported');
+};
+$('#msgs').addEventListener('click',async e=>{
+ const b=e.target.closest('[data-copy]');if(!b)return;
+ let t='';try{t=decodeURIComponent(b.dataset.copy||'')}catch{}
+ try{if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(t);else{const x=document.createElement('textarea');x.value=t;document.body.append(x);x.select();document.execCommand('copy');x.remove()}toast('Copied to clipboard')}
+ catch{toast('Could not copy this message')}
+});
+
 $('#f').onsubmit=e=>{e.preventDefault();send($('#in').value)};
 $('#in').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&matchMedia('(hover:hover)').matches){e.preventDefault();send(e.target.value)}};
 $('#in').oninput=e=>{e.target.style.height='auto';e.target.style.height=e.target.scrollHeight+'px'};
@@ -377,6 +395,7 @@ function openSt(){for(const i in F)$('#'+i).value=K[F[i]]||'';$('#st').classList
 $('#gr').onclick=$('#gs').onclick=openSt;
 // updates bell: newest first. Add a new entry on top for each release.
 const UPD=[
+{v:17,d:'11 Nov 2026',t:'Chat tools and smoother errors',l:['Copy any message with the new Copy text control under each chat bubble','Search saved chats by title or message text in the side drawer','Export the currently open conversation as a plain .txt file — it stays on your device','API errors now show clearer messages when a service sends an unexpected response']},
 {v:16,d:'11 Nov 2026',t:'Faster Groq',l:['If a reply takes longer than 23 seconds, Groq switches to a faster version and tells you with a 🌟 message','The faster version skips web search to answer quicker']},
 {v:15,d:'11 Nov 2026',t:'Smarter chat names',l:['Chats now get a short name that says what the chat is about, instead of copying the first thing you type','You can still hold a chat and rename it any time']},
 {v:14,d:'11 Nov 2026',t:'Updates bell',l:['New bell next to the Groq name that shows what changed in each version','A pink number tells you how many updates you have not seen yet']},
