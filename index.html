@@ -129,6 +129,7 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 /* updates bell */
 #up{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;gap:12px;padding:calc(22px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));background:radial-gradient(80% 38% at 50% 0,#1d4ed855,transparent),radial-gradient(60% 30% at 100% 100%,#a855f726,transparent),#040a1c}
 #up.hide{display:none}
+#gms{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;gap:12px;padding:calc(22px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));background:radial-gradient(80% 38% at 50% 0,#1d4ed855,transparent),radial-gradient(60% 30% at 100% 100%,#a855f726,transparent),#040a1c}#gms.hide{display:none}#gml{width:100%;max-width:420px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:2px;text-align:left;-webkit-overflow-scrolling:touch}
 #upl{width:100%;max-width:420px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:2px;text-align:left;-webkit-overflow-scrolling:touch}
 .upc{border:1.5px solid #14264f;border-radius:16px;padding:14px 16px;background:#08122b}
 .upc.new{border-color:transparent;background:linear-gradient(#0a1a3d,#0a1a3d) padding-box,var(--mv) border-box;background-size:auto,200% 100%;box-shadow:0 0 14px #a855f777}
@@ -224,7 +225,7 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 </div>
 
 <div id="bk" class="hide"></div>
-<aside id="dr"><button class="btn" id="nc">＋ New chat</button><input class="ds" id="cs" type="search" placeholder="Search saved chats…" autocomplete="off"><div style="display:flex;align-items:center;gap:8px"><p class="mu" style="flex:1">Saved chats</p><button class="btn o" id="ex">Export chat</button></div><div style="display:flex;gap:7px"><button class="btn o" id="backup" style="flex:1">⬇ Backup all</button><button class="btn o" id="restore" style="flex:1">⬆ Restore backup</button></div><input id="backupFile" type="file" accept="application/json,.json" class="hide"><div id="list"></div><div class="me"><div id="av" class="av"></div><b id="un" style="flex:1;min-width:0"></b><button class="btn o" id="so">Sign out</button></div></aside>
+<aside id="dr"><button class="btn" id="nc">＋ New chat</button><button class="btn o" id="gmo">🎮 My games</button><input class="ds" id="cs" type="search" placeholder="Search saved chats…" autocomplete="off"><div style="display:flex;align-items:center;gap:8px"><p class="mu" style="flex:1">Saved chats</p><button class="btn o" id="ex">Export chat</button></div><div style="display:flex;gap:7px"><button class="btn o" id="backup" style="flex:1">⬇ Backup all</button><button class="btn o" id="restore" style="flex:1">⬆ Restore backup</button></div><input id="backupFile" type="file" accept="application/json,.json" class="hide"><div id="list"></div><div class="me"><div id="av" class="av"></div><b id="un" style="flex:1;min-width:0"></b><button class="btn o" id="so">Sign out</button></div></aside>
 
 <div id="pv" class="scr hide"><div class="bar"><b class="gt">Live preview</b><button class="btn o" id="cp">Copy code</button><button class="btn o" id="px">Close</button></div><iframe id="fr" sandbox="allow-scripts allow-modals allow-forms allow-pointer-lock"></iframe></div>
 
@@ -238,7 +239,7 @@ textarea{width:100%;resize:none;max-height:120px;background:transparent;border:0
 <div id="ms" class="hide"><b class="gt" id="mt">Choose model</b><div id="mr"></div><button class="btn" id="sd">Done</button></div>
 <div id="cb" class="hide"></div>
 <div id="cm" class="pop hide"><button type="button" data-a="pin">📌 Pin</button><button type="button" data-a="ren">✏️ Rename</button><button type="button" data-a="del">🗑️ Delete</button></div>
-<div id="vc" class="scr hide"><p class="mu">Voice call</p><h1 class="gt" id="vn"></h1><div class="orb"></div><p class="mu" id="vs"></p><div class="chips" id="vl"></div><button type="button" class="lgb" id="vgb"></button><p class="mu" id="vgn" style="max-width:90%;font-size:12px"></p><button type="button" class="vm" id="vm" aria-label="Mute" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><button type="button" class="ec" id="ve">End call</button></div><div id="vgs" class="hide"><h2 class="lgt">Languages</h2><div id="vgl"></div><button type="button" class="lgx" id="vgx">Close</button></div><div id="up" class="hide"><h2 class="lgt">Updates</h2><div id="upl"></div><button type="button" class="lgx" id="upx">Close</button></div>
+<div id="vc" class="scr hide"><p class="mu">Voice call</p><h1 class="gt" id="vn"></h1><div class="orb"></div><p class="mu" id="vs"></p><div class="chips" id="vl"></div><button type="button" class="lgb" id="vgb"></button><p class="mu" id="vgn" style="max-width:90%;font-size:12px"></p><button type="button" class="vm" id="vm" aria-label="Mute" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><button type="button" class="ec" id="ve">End call</button></div><div id="vgs" class="hide"><h2 class="lgt">Languages</h2><div id="vgl"></div><button type="button" class="lgx" id="vgx">Close</button></div><div id="up" class="hide"><h2 class="lgt">Updates</h2><div id="upl"></div><button type="button" class="lgx" id="upx">Close</button></div><div id="gms" class="hide"><h2 class="lgt">🎮 My games</h2><div id="gml"></div><button type="button" class="lgx" id="gmx">Close</button></div>
 <div id="toast"></div>
 
 <script>
@@ -246,6 +247,7 @@ const LOGO="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBAUEBAYFB
 const J=(k,d)=>{try{return JSON.parse(L.getItem(k))??d}catch{return d}};
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 let K=J('groq.keys',{}),U=J('groq.user',null),chats=[],cur=null,tab='chat',busy=false,gOn=false,code='',A=[],toTop=false;
+const TC={chat:null,code:null,games:null};let GL=[];
 $$('img.lg').forEach(i=>i.src=LOGO);
 {const l=document.createElement('link');l.rel='icon';l.href=LOGO;document.head.append(l)}
 const SYS={
@@ -284,20 +286,30 @@ if(['gemini-4-argon','gemini-flash-latest','gemini-flash-lite-latest','gemini-pr
 if(K.mi==='gemini-2.5-flash-image'){K.mi='gemini-nano-banana-2.1';modelMigrated=true;}
 if(K.mi==='gemini-3-pro-image-preview'){K.mi='gemini-3-pro-image';modelMigrated=true;}
 if(modelMigrated){try{L.setItem('groq.keys',JSON.stringify(K));}catch{}}
-async function gq(m,s,ax=[],fast=0,sg=null,fm=null){
+async function sseText(r,pick,on){
+ let acc='',buf='';
+ const eat=chunk=>{buf+=chunk;let i;while((i=buf.indexOf('\n'))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!line.startsWith('data:'))continue;const d=line.slice(5).trim();if(!d||d==='[DONE]')continue;try{const x=pick(JSON.parse(d));if(x){acc+=x;try{on(acc)}catch{}}}catch{}}};
+ let raw='';
+ if(r.body&&r.body.getReader){const rd=r.body.getReader(),dec=new TextDecoder();for(;;){const {done,value}=await rd.read();if(done)break;const c=dec.decode(value,{stream:true});if(!acc&&raw.length<4e6)raw+=c;eat(c)}eat('\n')}
+ else{raw=await r.text();eat(raw+'\n')}
+ if(!acc&&raw.trim().startsWith('{')){try{const x=pick(JSON.parse(raw));if(x){acc=x;try{on(acc)}catch{}}}catch{}}
+ return acc}
+async function gq(m,s,ax=[],fast=0,sg=null,fm=null,on=null){
  if(ax.some(a=>a.k==='pdf'))throw new Error('This Groq model cannot read PDFs. Pick a Groq Flash model for this one.');
  const v=ax.filter(a=>a.k==='img'),n=m.length-1,mo=v.length?VIS:(fast?'openai/gpt-oss-20b':(fm||K.mg||MD[0][2][0]));
- const go=async t=>{const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+K.groq},signal:sg,body:JSON.stringify({model:mo,messages:[{role:'system',content:s},...m.map((x,i)=>({role:x.r,content:i===n&&v.length?[{type:'text',text:x.t},...v.map(a=>({type:'image_url',image_url:{url:a.d}}))]:x.t}))],temperature:.7,...(/^openai\/gpt-oss/.test(mo)?{reasoning_effort:fast?'low':EF().r,max_completion_tokens:fast?8192:EF().k}:{}),...(/^qwen\//.test(mo)?{reasoning_format:'hidden',reasoning_effort:fast?'low':QE[K.ef||'medium'],max_completion_tokens:16384}:{}),...(t?{tools:[{type:'browser_search'}]}:{})})});
+ const go=async t=>{const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+K.groq},signal:sg,body:JSON.stringify({...(on?{stream:true}:{}),model:mo,messages:[{role:'system',content:s},...m.map((x,i)=>({role:x.r,content:i===n&&v.length?[{type:'text',text:x.t},...v.map(a=>({type:'image_url',image_url:{url:a.d}}))]:x.t}))],temperature:.7,...(/^openai\/gpt-oss/.test(mo)?{reasoning_effort:fast?'low':EF().r,max_completion_tokens:fast?8192:EF().k}:{}),...(/^qwen\//.test(mo)?{reasoning_format:'hidden',reasoning_effort:fast?'low':QE[K.ef||'medium'],max_completion_tokens:16384}:{}),...(t?{tools:[{type:'browser_search'}]}:{})})});
+  if(on&&r.ok){const x=await sseText(r,j=>j.choices?.[0]?.delta?.content??j.choices?.[0]?.message?.content,on);if(!x.trim())throw new Error("The model returned an empty response.");return x.replace(/<think>[\s\S]*?<\/think>\s*/g,'')}
   const j=await readJSON(r);if(!r.ok)throw new Error(apiError(j,r));const g=j.choices?.[0]?.message;if(!g)throw new Error("The model returned an empty response.");if(t&&(g.executed_tools||[]).length)lastSw=1;return String(g.content||'').replace(/<think>[\s\S]*?<\/think>\s*/g,'')};
- const t=K.ws!==false&&!v.length&&/^openai\/gpt-oss/.test(mo);
+ const t=K.ws!==false&&!v.length&&/^openai\/gpt-oss/.test(mo)&&!on;
  const sw=t&&needsWeb(m);if(sw)setSt('Searching the web…');
  try{return await go(t)}catch(e){if(!t||(sg&&sg.aborted))throw e;if(sw)setSt('Retrying without web search…');return go(0)}}
-async function gm(m,s,ax=[],fast=0,sg=null,fm=null){
+async function gm(m,s,ax=[],fast=0,sg=null,fm=null,on=null){
  const n=m.length-1;
- const go0=async(t,mo,gc)=>{const r=await fetch(G+mo+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},signal:sg,body:JSON.stringify({systemInstruction:{parts:[{text:s}]},contents:m.map((x,i)=>({role:x.r==='user'?'user':'model',parts:[{text:x.t},...(i===n?ax.map(a=>({inlineData:{mimeType:a.mime,data:a.d.split(',')[1]}})):[])]})),...(t?{tools:[{google_search:{}}]}:{}),...(gc?{generationConfig:gc}:{})})});
+ const go0=async(t,mo,gc)=>{const r=await fetch(G+mo+(on?':streamGenerateContent?alt=sse':':generateContent'),{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},signal:sg,body:JSON.stringify({systemInstruction:{parts:[{text:s}]},contents:m.map((x,i)=>({role:x.r==='user'?'user':'model',parts:[{text:x.t},...(i===n?ax.map(a=>({inlineData:{mimeType:a.mime,data:a.d.split(',')[1]}})):[])]})),...(t?{tools:[{google_search:{}}]}:{}),...(gc?{generationConfig:gc}:{})})});
+  if(on&&r.ok){const x=await sseText(r,j=>(j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join(''),on);return [r,{candidates:[{content:{parts:[{text:x}]}}]}]}
   return [r,await readJSON(r)]};
  const go=async(t,mo)=>{const gc=fast?0:{thinkingConfig:{thinkingBudget:EF().g},maxOutputTokens:EF().k};let [r,j]=await go0(t,mo,gc);if(!r.ok&&gc&&r.status===400)[r,j]=await go0(t,mo,0);if(!r.ok)throw new Error(apiError(j,r));return j};
- const pk=fast?'gemini-3.5-flash-lite':(fm||K.mj||MD[1][2][0]),t=!fast&&K.ws!==false;let j,used=pk,e0;const sw=t&&needsWeb(m);if(sw)setSt('Searching the web…');
+ const pk=fast?'gemini-3.5-flash-lite':(fm||K.mj||MD[1][2][0]),t=!fast&&K.ws!==false&&!on;let j,used=pk,e0;const sw=t&&needsWeb(m);if(sw)setSt('Searching the web…');
  const fallbacks=fast?['gemini-3.5-flash-lite','gemini-3.1-flash-lite']:['gemini-3.8-flash','gemini-3.7-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite'];
  for(const mo of [pk,...fallbacks.filter(x=>x!==pk&&(!LM.gemini||LM.gemini.has(x)))]){
   try{try{j=await go(t,mo)}catch(e){if(!t||(sg&&sg.aborted))throw e;if(sw)setSt('Retrying without web search…');j=await go(0,mo)}used=mo;break}
@@ -344,7 +356,7 @@ if(!nb)s+='\n\n'+(op&&op.bl?(tab==='games'?EF().gp:EF().cp):(EF().p?EF().p+' ':'
  let o=K.prov==='gemini'?['gemini','groq']:K.prov==='groq'?['groq','gemini']:K.groq?['groq','gemini']:['gemini','groq'];
  if(ax.length&&K.prov!=='groq'&&K.prov!=='gemini')o=['gemini','groq'];
  if(op&&op.only)o=[op.only];
- let er,fb=0,slow=0;const ac=new AbortController(),tm=setTimeout(()=>{slow=1;ac.abort()},op&&op.to?op.to*1000:nb?23000:EF().t*1000);for(const p of o){if(!K[p])continue;try{const a=await(p==='groq'?gq:gm)(m,s,ax,0,ac.signal,op&&op.fm||null);clearTimeout(tm);return fb?'⚠️ '+(/quota|billing|exceed|free tier|permission/i.test(String(er.message||er))?'Your chosen model needs a paid plan or hit its limit':'Your chosen model failed ('+String(er.message||er).slice(0,90)+')')+', so a backup model answered.\n\n'+a:a}catch(e){if(slow)break;er=e;fb=1;setSt('Trying a backup model…')}}
+ let er,fb=0,slow=0;const ac=new AbortController(),tm=setTimeout(()=>{slow=1;ac.abort()},op&&op.to?op.to*1000:nb?23000:EF().t*1000);for(const p of o){if(!K[p])continue;try{const a=await(p==='groq'?gq:gm)(m,s,ax,0,ac.signal,op&&op.fm||null,op&&op.on||null);clearTimeout(tm);return fb?'⚠️ '+(/quota|billing|exceed|free tier|permission/i.test(String(er.message||er))?'Your chosen model needs a paid plan or hit its limit':'Your chosen model failed ('+String(er.message||er).slice(0,90)+')')+', so a backup model answered.\n\n'+a:a}catch(e){if(slow)break;er=e;fb=1;setSt('Trying a backup model…')}}
  clearTimeout(tm);
  if(slow&&op&&op.nofast)throw new Error('That step took too long.');
  if(slow){setSt('Switching to a faster Groq…');for(const p of o){if(!K[p])continue;try{const a=await(p==='groq'?gq:gm)(m,s,ax,1);return(nb?'':'🌟Switched To Faster Groq\nVersion🌟\n\n')+a}catch(e){er=e}}}
@@ -393,22 +405,22 @@ async function build(h,sys,ax){
  const g=tab==='games',ef=K.ef||'medium';
  if(!g&&(!BLD.test(lu.t)||QST.test(lu.t)))return ask(h,sys,ax);
  const t00=Date.now(),el=()=>(Date.now()-t00)/1000,n=IMPN[ef]??1,floor=FLOOR[ef]||0,to=STEPT[ef]||90,ch=await codeChain(),F=FOC[g?'g':'c'];
- const askE=(e,m,x=[])=>ask(m,sys,x,0,{to,nofast:1,only:e.prov,fm:e.model,bl:1});
+ let lbl='';const askE=(e,m,x=[])=>ask(m,sys,x,0,{to,nofast:1,only:e.prov,fm:e.model,bl:1,on:a=>{const n=codeLines(a);setSt(lbl+(n?' · Wrote '+n+(n===1?' Line':' Lines')+' Of Code':''))}});
  const had=h.slice(0,-1).some(x=>x.r==='assistant'&&/```/.test(x.t)),isCode=x=>g?hasGame(x):/```[\s\S]*?```/.test(x);
  let plan='';
  if(g&&!had&&ef!=='low'){setSt('Designing the game…');try{plan=(await tryChain(ch,0,e=>ask([{r:'user',t:'Design brief for this game request: '+lu.t+'\n\nWrite a detailed brief of at most 350 words: the core loop and rules, touch and keyboard controls, 5 to 7 features that make it fun and original, the enemy, obstacle and power-up list, the difficulty curve and progression, the neon visual and sound style, the title, pause and game over screens, and the 5 trickiest bugs to avoid. Plain text, no code.'}],'You are a lead game designer.',[],0,{to:60,nofast:1,only:e.prov,fm:e.model}))).trim().slice(0,3000)}catch{}}
- setSt(g?'Writing the game…':'Writing the code…');
+ lbl=g?'Writing the game…':'Writing the code…';setSt(lbl);
  const h1=plan?[...h.slice(0,-1),{...lu,t:lu.t+'\n\nDESIGN BRIEF (follow it and add your own good ideas):\n'+plan}]:h;
  let cur=await tryChain(ch,0,e=>askE(e,h1,ax));
  if(!isCode(cur))return cur;
  for(let t=0;t<3&&codeLines(cur)<300;t++){
-  setSt('Only '+codeLines(cur)+' lines so far, writing a fuller version…');
+  lbl='Writing a fuller version…';setSt('Only '+codeLines(cur)+' lines so far, writing a fuller version…');
   try{const r=await tryChain(ch,t,e=>askE(e,[{r:'user',t:'Original request:\n'+lu.t+'\n\nCurrent version:\n'+cur+'\n\nThis version is only '+codeLines(cur)+' lines. Rewrite it as a much fuller, higher quality version with AT LEAST 300 lines of real code: add genuine features, handling, screens or modes and polish. No padding, no duplicated code, no comment spam. Keep everything that already works.'+RET}]));
    if(isCode(r)&&codeLines(r)>codeLines(cur))cur=r;else break}catch{break}}
  let i=0,bad=0;
  while((i<n||(floor&&el()<floor))&&i<12&&bad<2){
   const f=F[i%F.length];
-  setSt('Improving the '+(g?'game':'code')+', pass '+(i+1)+(i<n?' of '+n:'')+': '+f.n+' ('+codeLines(cur)+' lines so far)…');
+  lbl='Improving the '+(g?'game':'code')+', pass '+(i+1)+(i<n?' of '+n:'')+': '+f.n;setSt(lbl+' ('+codeLines(cur)+' lines so far)…');
   try{const r=await tryChain(ch,i%2?1+(i>>1):0,e=>askE(e,[{r:'user',t:'Original request:\n'+lu.t+'\n\nCurrent version:\n'+cur+'\n\n'+f.t}]));
    if(isCode(r)&&codeLines(r)>=codeLines(cur)*.8){cur=r;lastPs++;bad=0}else bad++}catch{bad++}
   i++}
@@ -422,7 +434,7 @@ async function img(p){
   const r=await fetch('https://generativelanguage.googleapis.com/v1beta/interactions',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini,'Api-Revision':'2026-05-20'},body:JSON.stringify({model,input:p,response_format:{type:'image',mime_type:'image/png',aspect_ratio:'1:1'}})});
   const j=await readJSON(r);if(!r.ok)throw new Error(apiError(j,r));
   const data=j.output_image||j.outputImage||null;
-  if(!data?.data)throw new Error('Nano Banana 2.1 returned no image. Check that this model is available for your Groq API key.');
+  if(!data?.data)throw new Error('Groq Image 2.1 returned no image. Check that this model is available for your Groq API key.');
   return 'data:'+(data.mime_type||data.mimeType||'image/png')+';base64,'+data.data;
  }
  const r=await fetch(G+model+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':K.gemini},body:JSON.stringify({contents:[{parts:[{text:p}]}],generationConfig:{responseModalities:['TEXT','IMAGE']}})});
@@ -470,7 +482,18 @@ const wroteTxt=t=>{const n=codeLines(t);return n?'Wrote '+n+(n===1?' Line':' Lin
 const hasGame=t=>/```(?:html|htm)\s*\n?[\s\S]*?```/i.test(t||'');
 const wlHead=(m,c)=>c.tab==='games'&&m.r==='assistant'&&hasGame(m.t)?'':wroteTxt(m.t);
 const autoSave=()=>{if(U)save()};addEventListener('pagehide',autoSave);document.addEventListener('visibilitychange',()=>{if(document.hidden)autoSave()});
-const newChat=()=>{const c={id:Date.now().toString(36),tab,title:'New chat',m:[]};chats.unshift(c);cur=c.id;return c};
+const gkey=()=>'groq.games.'+U.id;
+const gsave=()=>{try{L.setItem(gkey(),JSON.stringify(GL))}catch{toast('Storage is full. Delete old games.')}};
+const gameCode=t=>{const m=/```(?:html|htm)\s*\n?([\s\S]*?)```/i.exec(t||'');return m?m[1].trim():''};
+function upsertGame(c){
+ if(!c||c.tab!=='games'||!U)return;
+ const a=[...c.m].reverse().find(x=>x.r==='assistant'&&hasGame(x.t));if(!a)return;
+ const code=gameCode(a.t);if(!code)return;
+ const first=((c.m.find(x=>x.r==='user')||{}).t||'My game').replace(/\s+/g,' ').slice(0,40);
+ const e={id:c.id,title:(c.title&&c.title!=='New chat')?c.title:first,code,lines:codeLines(a.t),t:Date.now()},g=GL.find(x=>x.id===c.id);
+ if(g)Object.assign(g,e);else GL.unshift(e);gsave()}
+
+const newChat=()=>{const c={id:Date.now().toString(36),tab,title:'New chat',m:[]};chats.unshift(c);cur=c.id;TC[tab]=c.id;return c};
 // chat names: after the first reply, Groq writes a short title that says what the chat is about
 async function ttlAI(u,a){
  const sy='You name chats. Reply with ONLY a short title of 2 to 5 words that describes what the chat is about. Do not copy the user\'s message word for word. No quotes, no emoji, no full stop. Use the same language the user wrote in.';
@@ -490,10 +513,10 @@ async function autoName(c){
  if(!u||!a)return;c.tg=1;
  let t='';try{t=await ttlAI(u.t.replace(/^\/\w+\s+/,''),a.t.replace(/^ℹ️[^\n]*\n\n/,''))}catch{}
  if(!t)t=u.t.replace(/^\/\w+\s+/,'').slice(0,34);
- if(c.title==='New chat')c.title=t;save();list()}
+ if(c.title==='New chat')c.title=t;save();{const g=GL.find(x=>x.id===c.id);if(g){g.title=c.title;gsave()}}list()}
 function render(){
  const c=chats.find(x=>x.id===cur),box=$('#msgs'),T=UI[tab];
- if(!c||!c.m.length){box.innerHTML='<div class="empty"><img class="lg" src="'+LOGO+'" width="84" height="84" alt=""><h2 class="gt">'+T.hi+'</h2><div class="chips">'+T.ch.map(x=>'<button class="chip">'+esc(x)+'</button>').join('')+'</div></div>';return}
+ if(!c||!c.m.length){box.innerHTML='<div class="empty"><img class="lg" src="'+LOGO+'" width="84" height="84" alt=""><h2 class="gt">'+T.hi+'</h2><div class="chips">'+T.ch.map(x=>'<button class="chip">'+esc(x)+'</button>').join('')+'</div>'+(tab==='games'&&GL.length?'<button type="button" class="btn o" data-mygames="1">🎮 My games ('+GL.length+')</button>':'')+'</div>';return}
  box.innerHTML=c.m.map((m,i)=>'<div class="m '+m.r+'">'+(m.r==='user'?esc(m.t).replace(/\n/g,'<br>'):(m.th||wlHead(m,c)||m.ps?'<div class="thr">'+(m.th?'<div class="th">'+thTxt(m.th)+(m.sw?' · searched the web':'')+'</div>':'')+(wlHead(m,c)?'<span class="wl">📝 '+wlHead(m,c)+'</span>':'')+(m.ps?'<span class="wl">🔁 Improved '+m.ps+(m.ps===1?' time':' times')+'</span>':'')+'</div>':'')+(c.tab==='games'&&m.r==='assistant'?mdGame(m.t):md(m.t)))+(m.img?'<img src="'+m.img+'" alt="">':'')+(m.att||[]).map(a=>a.k==='img'?'<img src="'+a.th+'" alt="">':'<div class="fc">'+(a.k==='pdf'?'📕 ':'📄 ')+esc(a.n)+'</div>').join('')+'<div class="ma"><button type="button" data-copy="'+encodeURIComponent(m.t)+'">Copy text</button>'+(m.r==='assistant'&&i===c.m.length-1&&!busy?'<button type="button" data-retry="'+i+'">↻ Retry response</button>':'')+'</div></div>').join('')+(busy?'<div class="m assistant dots"><i></i><i></i><i></i><span class="tk" id="thk">'+stat+' '+thNow()+'s</span></div>':'');
  box.scrollTop=box.scrollHeight;
  const l=box.querySelector('.m:last-child');
@@ -531,7 +554,7 @@ async function send(txt){
     if(at.some(x=>x.k==='img'||x.k==='pdf'))throw new Error('Deep Research currently accepts text prompts and text files. Switch it off to ask about attached images or PDFs.');
     a=await deepResearch(txt,h);lastSw=1;
    }else a=await build(h,SYS[tab],at.filter(x=>x.k!=='txt'));
-   c.m.push({r:'assistant',t:a,th:Math.max(1,Math.round((Date.now()-t0)/1000)),sw:lastSw?1:undefined,ps:lastPs||undefined});{const nl=codeLines(a);if(nl)toast('📝 Wrote '+nl+' Lines Of Code')}
+   c.m.push({r:'assistant',t:a,th:Math.max(1,Math.round((Date.now()-t0)/1000)),sw:lastSw?1:undefined,ps:lastPs||undefined});{const nl=codeLines(a);if(nl)toast('📝 Wrote '+nl+' Lines Of Code')}upsertGame(c);
    const m=tab!=='chat'&&/```html\s*\n([\s\S]*?)```/i.exec(a);if(m)pv(m[1]);
   }
  }catch(e){c.m.push({r:'assistant',t:'⚠️ '+(e.message||e)+'\n\nCheck your keys in the setup (⚙). If you opened this file in a preview, open it in your browser instead, because previews block outside requests.'})}
@@ -540,7 +563,7 @@ async function send(txt){
 const pv=c=>{code=c;$('#fr').srcdoc=c;$('#pv').classList.remove('hide')};
 $('#px').onclick=()=>{$('#pv').classList.add('hide');$('#fr').srcdoc=''};
 $('#cp').onclick=()=>navigator.clipboard.writeText(code).then(()=>toast('Code copied'),()=>toast('Copy failed'));
-$('#msgs').onclick=e=>{const retry=e.target.closest('[data-retry]');if(retry){const chat=chats.find(x=>x.id===cur),idx=Number(retry.dataset.retry);if(chat&&idx===chat.m.length-1&&idx>0&&chat.m[idx-1].r==='user'){const prompt=chat.m[idx-1].t;chat.m.splice(idx-1,2);save();render();send(prompt)}return}const r=e.target.closest('.run'),c=e.target.closest('.chip'),gp=e.target.closest('[data-game-play]'),gd=e.target.closest('[data-game-download]');if(gp){try{pv(decodeURIComponent(gp.dataset.gamePlay))}catch{toast('Could not open game')}}if(gd){try{downloadBlob(new Blob([decodeURIComponent(gd.dataset.gameDownload)],{type:'text/html;charset=utf-8'}),'my-game.html');toast('Game downloaded')}catch{toast('Could not download game')}}if(r)pv(decodeURIComponent(r.dataset.c));if(c)send(c.textContent)};
+$('#msgs').onclick=e=>{if(e.target.closest('[data-mygames]')){gOpen();return}const retry=e.target.closest('[data-retry]');if(retry){const chat=chats.find(x=>x.id===cur),idx=Number(retry.dataset.retry);if(chat&&idx===chat.m.length-1&&idx>0&&chat.m[idx-1].r==='user'){const prompt=chat.m[idx-1].t;chat.m.splice(idx-1,2);save();render();send(prompt)}return}const r=e.target.closest('.run'),c=e.target.closest('.chip'),gp=e.target.closest('[data-game-play]'),gd=e.target.closest('[data-game-download]');if(gp){try{pv(decodeURIComponent(gp.dataset.gamePlay))}catch{toast('Could not open game')}}if(gd){try{downloadBlob(new Blob([decodeURIComponent(gd.dataset.gameDownload)],{type:'text/html;charset=utf-8'}),'my-game.html');toast('Game downloaded')}catch{toast('Could not download game')}}if(r)pv(decodeURIComponent(r.dataset.c));if(c)send(c.textContent)};
 $('#cs').oninput=()=>list();
 $('#ex').onclick=()=>{
  const c=chats.find(x=>x.id===cur);
@@ -565,12 +588,29 @@ $('#f').onsubmit=e=>{e.preventDefault();send($('#in').value)};
 $('#in').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&matchMedia('(hover:hover)').matches){e.preventDefault();send(e.target.value)}};
 $('#in').oninput=e=>{e.target.style.height='auto';e.target.style.height=e.target.scrollHeight+'px'};
 $('#im').onclick=()=>{pm(0);$('#in').value='/image ';$('#in').focus()};
-$$('nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;$$('nav button').forEach(x=>x.classList.toggle('on',x===b));const c=chats.find(x=>x.tab===tab&&x.m.length);cur=c?c.id:null;$('#in').placeholder=UI[tab].ph;$('#im').classList.toggle('hide',tab!=='chat');$('#cl').classList.toggle('hide',tab!=='chat');render();list()});
+$$('nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;$$('nav button').forEach(x=>x.classList.toggle('on',x===b));const c=tab==='games'?(chats.find(x=>x.id===TC.games&&x.m.length)||chats.find(x=>x.tab==='games'&&x.m.length)):chats.find(x=>x.id===TC[tab]&&x.tab===tab&&x.m.length);cur=c?c.id:null;$('#in').placeholder=UI[tab].ph;$('#im').classList.toggle('hide',tab!=='chat');$('#cl').classList.toggle('hide',tab!=='chat');render();list()});
 
 const dr=o=>{$('#dr').classList.toggle('open',o);$('#bk').classList.toggle('hide',!o)};
 $('#mn').onclick=()=>dr(1);$('#bk').onclick=()=>dr(0);
-$('#nc').onclick=()=>{cur=null;render();list();dr(0)};
-function login(u){U=u;L.setItem('groq.user',JSON.stringify(u));chats=J(key(),[]);cur=null;
+$('#nc').onclick=()=>{TC.chat=null;TC.code=null;cur=null;render();list();dr(0)};
+function gameList(){
+ $('#gml').innerHTML=GL.length?[...GL].sort((a,b)=>b.t-a.t).map(g=>'<div class="upc"><b>'+esc(g.title)+'</b><p class="mu" style="margin:4px 0 8px">📝 Wrote '+g.lines+' Lines Of Code · '+new Date(g.t).toLocaleDateString()+'</p><div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="btn o" data-ga="play" data-gi="'+g.id+'">▶ Play</button><button type="button" class="btn o" data-ga="update" data-gi="'+g.id+'">✏️ Update</button><button type="button" class="btn o" data-ga="dl" data-gi="'+g.id+'">⬇ Download</button><button type="button" class="btn o" data-ga="del" data-gi="'+g.id+'">🗑 Delete</button></div></div>').join(''):'<p class="mu">Every game Groq makes is saved here, in all your chats, so you can play it again or ask Groq to update it.</p>'}
+function gOpen(){gameList();$('#gms').classList.remove('hide');dr(0)}
+function gUpdate(g){
+ $('#gms').classList.add('hide');
+ document.querySelector('nav button[data-t="games"]').click();
+ let c=chats.find(x=>x.id===g.id);
+ if(!c||!c.m.length){c={id:g.id,tab:'games',title:g.title,m:[{r:'user',t:'Open my game "'+g.title+'".'},{r:'assistant',t:'```html\n'+g.code+'\n```\nLoaded your game. Tell me what to change or add.'}]};chats=chats.filter(x=>x.id!==c.id);chats.unshift(c);save()}
+ cur=c.id;TC.games=c.id;render();list();
+ $('#in').placeholder='What should I change in "'+g.title+'"?';$('#in').focus()}
+$('#gmo').onclick=gOpen;$('#gmx').onclick=()=>$('#gms').classList.add('hide');
+$('#gml').onclick=e=>{const b=e.target.closest('[data-ga]');if(!b)return;const g=GL.find(x=>x.id===b.dataset.gi);if(!g)return;const a=b.dataset.ga;
+ if(a==='play'){$('#gms').classList.add('hide');pv(g.code)}
+ else if(a==='dl')downloadBlob(new Blob([g.code],{type:'text/html'}),((g.title||'game').replace(/[^a-z0-9-_ ]/gi,'').trim().replace(/\s+/g,'-')||'game')+'.html');
+ else if(a==='update')gUpdate(g);
+ else if(a==='del'){if(b.dataset.armed){GL=GL.filter(x=>x!==g);gsave();gameList()}else{b.dataset.armed='1';b.textContent='Tap again to delete';setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent='🗑 Delete'}},3000)}}};
+
+function login(u){U=u;L.setItem('groq.user',JSON.stringify(u));chats=J(key(),[]);cur=null;TC.chat=null;TC.code=null;TC.games=(chats.find(x=>x.tab==='games'&&x.m.length)||{}).id||null;GL=J(gkey(),[]);
  $('#auth').classList.add('hide');$('#app').classList.remove('hide');
  $('#un').textContent=u.name;
  $('#av').innerHTML=u.pic?'<img class="av" src="'+esc(u.pic)+'" referrerpolicy="no-referrer" alt="">':esc(u.name[0].toUpperCase());
@@ -593,8 +633,9 @@ function openSt(){for(const i in F)$('#'+i).value=K[F[i]]||'';$('#st').classList
 $('#gr').onclick=$('#gs').onclick=openSt;
 // updates bell: newest first. Add a new entry on top for each release.
 const UPD=[
- {v:30,d:'13 Nov 2026',t:'Real Groq Deep Research and Nano Banana 2.1',l:['Added an optional Deep Research tool in the model/tools menu. Turn it on when you want a multi-step investigation and cited report; normal chat stays unchanged when it is off','Deep Research runs through Groq’s background Interactions API and shows a running status while it works. A Groq API key is required, and the feature is in preview','Added Nano Banana 2.1 as the default Groq image model using Google’s current Interactions API image endpoint','Deep Research accepts text prompts and text files; switch it off when asking about attached photos or PDFs']},
- {v:29,d:'13 Nov 2026',t:'Current models, image privacy and deeper research search',l:['Updated the chat model menu to current Groq GPT OSS 120B, GPT OSS 20B and Qwen 3.8 27B options, plus current Groq 3.x models','Retired Groq model selections are automatically moved to GPT OSS 120B; older Groq defaults are moved to Groq 3.8 Flash','Added current Nano Banana 2, Nano Banana 2 Lite and Nano Banana Pro image models with clearer names','Image prompts go to Pollinations only when you deliberately select Pollinations; a failed Groq image request no longer silently sends the prompt to another service','Research, source-checking and fact-checking requests are more likely to trigger the app’s existing web-search path when it is enabled']},
+ {v:31,d:'13 Nov 2026',t:'My games, fresh Code chats and live line count',l:['New 🎮 My games: every game Groq makes is saved for all your chats, and you can play, download, update or delete it','Starting a new chat now clears the Code tab too, so old code does not come back','While Groq writes code you can see "Wrote N Lines Of Code" going up live','The image models are now called Groq Image, and the two Groq chat model lists are now one']},
+ {v:30,d:'13 Nov 2026',t:'Real Groq Deep Research and Groq Image 2.1',l:['Added an optional Deep Research tool in the model/tools menu. Turn it on when you want a multi-step investigation and cited report; normal chat stays unchanged when it is off','Deep Research runs through Groq’s background Interactions API and shows a running status while it works. A Groq API key is required, and the feature is in preview','Added Groq Image 2.1 as the default Groq image model using Google’s current Interactions API image endpoint','Deep Research accepts text prompts and text files; switch it off when asking about attached photos or PDFs']},
+ {v:29,d:'13 Nov 2026',t:'Current models, image privacy and deeper research search',l:['Updated the chat model menu to current Groq GPT OSS 120B, GPT OSS 20B and Qwen 3.8 27B options, plus current Groq 3.x models','Retired Groq model selections are automatically moved to GPT OSS 120B; older Groq defaults are moved to Groq 3.8 Flash','Added current Groq Image 2, Groq Image 2 Lite and Groq Image Pro image models with clearer names','Image prompts go to Pollinations only when you deliberately select Pollinations; a failed Groq image request no longer silently sends the prompt to another service','Research, source-checking and fact-checking requests are more likely to trigger the app’s existing web-search path when it is enabled']},
  {v:28,d:'13 Nov 2026',t:'Formatting fixes',l:['Inline code and maths like 2*3*4 or x**2 no longer turn into italics or bold','Bullet and numbered lists no longer get extra blank lines']},
  {v:27,d:'13 Nov 2026',t:'Smarter replies and one-tap retry',l:['Assistant messages now have a Retry response button, so you can ask again without duplicating the conversation','Markdown rendering now supports headings, bullet lists, numbered lists, blockquotes and horizontal rules','Code stays escaped and safe in chat; links open in a separate tab with noopener protection','Small-screen chat actions are easier to reach and the update history now records this release']},
 {v:26,d:'13 Nov 2026',t:'Backup models fixed',l:['Backup models now come from the Groq console list: GPT OSS 120B, Qwen 3.8 27B and GPT OSS 20B (the Llama ones are enterprise only now)','Groq asks your account which models it really has, and skips any model that fails with an access error','Qwen 3.8 27B added to the model list and it is now used to read images, since Llama 4 Scout was removed']},
@@ -859,7 +900,7 @@ const pvd=()=>K.prov==='gemini'||K.prov==='groq'?K.prov:(K.groq||!K.gemini?'groq
 const sk=()=>{L.setItem('groq.keys',JSON.stringify(K));chip()},sh=v=>v.split('/').pop(),nm=v=>v==='pollinations'?'Pollinations (external)':v,mk=()=>pvd()==='groq'?'mg':'mj';
 const pretty=v=>v.replace(/^[^/]+\//,'').replace(/^(llama|gemini|gemma)-/,'').split('-').map(w=>/^[0-9]+b$/i.test(w)||/^(gpt|oss)$/i.test(w)?w.toUpperCase():w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
 const lb=(v,p='groq')=>v==='pollinations'?'Pollinations (external)':'Groq '+pretty(v);
-const imageLb=v=>v==='pollinations'?'Pollinations (external)':v==='gemini-nano-banana-2.1'?'Nano Banana 2.1':v==='gemini-3.1-flash-image'?'Nano Banana 2':v==='gemini-3.1-flash-lite-image'?'Nano Banana 2 Lite':v==='gemini-3-pro-image'?'Nano Banana Pro':'Groq '+pretty(v);
+const imageLb=v=>v==='pollinations'?'Pollinations (external)':v==='gemini-nano-banana-2.1'?'Groq Image 2.1':v==='gemini-3.1-flash-image'?'Groq Image 2':v==='gemini-3.1-flash-lite-image'?'Groq Image 2 Lite':v==='gemini-3-pro-image'?'Groq Image Pro':'Groq '+pretty(v);
 function chip(){const p=pvd();$('#ml').textContent=lb(K[mk()]||MD[p==='groq'?0:1][2][0],p).replace(/^(Groq|Groq) /,'');$('#efl').textContent=EF().n;liveList('groq');liveList('gemini')}
 function efSheet(){$('#mr').innerHTML=EK.map(k=>'<button type="button" class="opt'+((K.ef||'medium')===k?' on':'')+'" data-g="e" data-v="'+k+'"><span>'+EFT[k].l+'<small style="display:block;opacity:.7;font-weight:400;font-size:11.5px;text-shadow:none">'+EFS[k]+'</small></span><i></i></button>').join('')}
 function ms(o,e){$('#ms').classList.toggle('hide',!o);$('#sb').classList.toggle('hide',!o);if(!o)return;$('#mt').textContent=e?'Effort':'Choose model';if(e)return efSheet();
@@ -868,8 +909,7 @@ function ms(o,e){$('#ms').classList.toggle('hide',!o);$('#sb').classList.toggle(
  const visible=pp=>MD[pp==='groq'?0:1][2].filter(x=>x===K[pp==='groq'?'mg':'mj']||!LM[pp]||LM[pp].has(x));
  const f=([pp,x])=>rw('m',pp+':'+x,lb(x,pp),p===pp&&x===v);
  const gm=visible('groq').map(x=>['groq',x]),ge=visible('gemini').map(x=>['gemini',x]);
- $('#mr').innerHTML='<div class="gh">Groq chat models</div>'+gm.map(f).join('')
- +'<div class="gh">Groq chat models</div>'+ge.map(f).join('')+rw('m','_g','Custom model…',c)+'<input id="xc" placeholder="Model ID" class="'+(c?'':'hide')+'">'
+ $('#mr').innerHTML='<div class="gh">Groq chat models</div>'+[...gm,...ge].map(f).join('')+rw('m','_g','Custom model…',c)+'<input id="xc" placeholder="Model ID" class="'+(c?'':'hide')+'">'
  +'<div class="gh">Image models</div>'+MD[2][2].map(x=>rw('i',x,imageLb(x),x===im)).join('')+rw('i','_c','Custom image model…',ic)+'<input id="yc" placeholder="Model ID" class="'+(ic?'':'hide')+'">'
  ;
  $('#xc').value=K[mk()]||'';$('#yc').value=K.mi||''}
@@ -910,7 +950,7 @@ L2.addEventListener('pointerdown',e=>{const i=e.target.closest('.ci');if(!i||e.t
 L2.addEventListener('pointermove',e=>{if(Math.hypot(e.clientX-sx,e.clientY-sy)>10)clearTimeout(lp)});
 ['pointerup','pointercancel','pointerleave'].forEach(t=>L2.addEventListener(t,()=>clearTimeout(lp)));
 L2.oncontextmenu=e=>{if(e.target.closest('.ci'))e.preventDefault()};
-L2.onclick=e=>{if(lf){lf=false;return}if(e.target.classList.contains('rn'))return;const i=e.target.closest('.ci');if(i){cur=i.dataset.id;render();list();dr(0)}};
+L2.onclick=e=>{if(lf){lf=false;return}if(e.target.classList.contains('rn'))return;const i=e.target.closest('.ci');if(i){cur=i.dataset.id;{const c=chats.find(x=>x.id===cur);if(c)TC[c.tab]=c.id}render();list();dr(0)}};
 const rn=ok=>{if(!rid)return;const c=chats.find(x=>x.id===rid),v=($('#list .rn')?.value||'').trim();if(ok&&c&&v&&v!==c.title){c.title=v.slice(0,60);rdn=rid}rid=null;if(rdn)setTimeout(()=>{rdn=null},1000);save();list()};
 L2.addEventListener('keydown',e=>{if(e.target.classList.contains('rn')){if(e.key==='Enter'){e.preventDefault();rn(1)}if(e.key==='Escape')rn(0)}});
 L2.addEventListener('focusout',e=>{if(e.target.classList.contains('rn'))rn(1)});
